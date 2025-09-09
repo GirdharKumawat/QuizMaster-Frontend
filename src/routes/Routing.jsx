@@ -2,20 +2,25 @@ import SigninPage from '../pages/Signin'
 import SignupPage from '../pages/Signup'
 import RoomJoinPage from '../pages/RoomJoin'
 import CreateRoomPage from '../pages/CreateRoom'
-
+import WaitingRoomPage from '../pages/WaitingRoom'
+import QuizPage from '../pages/QuizPage'
+import LeaderBordPage from '../pages/LeaderBord'
+import ProtectedRoute from './ProtectedRoute'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-import React from 'react'
 import HomePage from '../pages/Home';
+ 
 
 function Routing() {
   return (
     <>
       <BrowserRouter>
                 <Routes>
-                    <Route path='/' element={<HomePage />} />
-                    <Route path='/create-room' element={<CreateRoomPage />} />
-                    <Route path='/join-room' element={<RoomJoinPage />} />
+                    <Route path='/' element={<ProtectedRoute><HomePage/></ProtectedRoute>} />
+                    <Route path='/join' element={<ProtectedRoute><RoomJoinPage /></ProtectedRoute>} />
+                    <Route path='/create' element={<ProtectedRoute><CreateRoomPage /></ProtectedRoute>} />
+                    <Route path='/waiting' element={<ProtectedRoute><WaitingRoomPage /></ProtectedRoute>} />
+                    <Route path='/quiz' element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
+                    <Route path='/leaderboard' element={<ProtectedRoute><LeaderBordPage /></ProtectedRoute>} />
 
                     <Route path='/login' element={<SigninPage />} />
                     <Route path='/signup' element={<SignupPage />} />
@@ -26,3 +31,4 @@ function Routing() {
 }
 
 export default Routing
+

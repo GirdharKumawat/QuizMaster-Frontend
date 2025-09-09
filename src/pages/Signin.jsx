@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { Trophy, Mail, Lock } from "lucide-react";
 import { Button, Card, Input, GoogleLoginButton } from "../components/ui";
 import { useNavigate } from "react-router-dom";
-
+import { useAuth } from "../features/auth/useAuth";
 const SigninPage = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const navigate = useNavigate();
+  const { loginUser } = useAuth();
   const handleLogin = () => {
     // Mock login - replace with actual authentication
-    onLogin({ name: "User", email: formData.email });
+    loginUser({ email: formData.email, password: formData.password });
   };
 
   return (
@@ -28,6 +29,7 @@ const SigninPage = () => {
           <Input
             icon={Mail}
             type="email"
+            required
             placeholder="Email or Username"
             value={formData.email}
             onChange={(e) =>
@@ -37,6 +39,7 @@ const SigninPage = () => {
 
           <Input
             icon={Lock}
+            required
             type="password"
             placeholder="Password"
             value={formData.password}

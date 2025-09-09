@@ -1,5 +1,5 @@
  
- 
+import { Toaster } from 'sonner'; 
 import Routing from './routes/Routing'
 
 function App() {
@@ -7,6 +7,7 @@ function App() {
   return (
     <>
      <Routing/>
+      <Toaster position="top-center" richColors />
     </>
   )
 }

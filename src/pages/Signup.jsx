@@ -2,6 +2,7 @@ import { useState } from "react";
 import { User, Mail, Lock } from "lucide-react";
 import { Button, Card, Input } from "../components/ui";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../features/auth/useAuth";
 const SignupPage = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -12,15 +13,19 @@ const SignupPage = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+  const {signupUser}= useAuth()
   const handleSignup = () => {
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
-      return;
+      toast.error("Passwords do not match", {
+                duration: 3000
+            });
+             return;
     }
 
+    signupUser({ username: formData.name, email: formData.email, password: formData.password });
+     
     // Mock signup - replace with actual registration
-    onSignup({ name: formData.name, email: formData.email });
+    // onSignup({ name: formData.name, email: formData.email });
   };
 
   return (
@@ -67,7 +72,7 @@ const SignupPage = () => {
               icon={Mail}
               type="email"
               placeholder="Email Address"
-              value={formData.email}
+              value={formData.email} 
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
               }

@@ -36,3 +36,15 @@ lightGrey: "#F2F4F7",
 .bg-frost {
   background-color: rgba(255, 255, 255, 0.25);
 }
+
+/* Animation utilities */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(18px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-fade-in { animation: fade-in .6s cubic-bezier(.16,.84,.44,1) forwards; animation-delay: var(--delay,0ms); }
+.animate-slide-up { animation: slide-up .65s cubic-bezier(.16,.84,.44,1) forwards; animation-delay: var(--delay,0ms); }

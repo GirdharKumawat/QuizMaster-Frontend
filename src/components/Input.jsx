@@ -7,7 +7,7 @@ const Input = ({ icon: Icon, type = 'text', placeholder, value, onChange, classN
 
     return (
       <div className="relative">
-        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600">
+        <div className="absolute z-200 left-4 top-1/2 transform -translate-y-1/2 text-gray-600">
           <Icon size={20} />
         </div>
         <input
@@ -15,7 +15,7 @@ const Input = ({ icon: Icon, type = 'text', placeholder, value, onChange, classN
           placeholder={placeholder}
           value={value}
           onChange={onChange}
-          className={`w-full pl-12 pr-12 py-4 bg-white/30 backdrop-blur-sm border border-gray-250 rounded-xl placeholder-gray-600 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all ${className}`}
+          className={`w-full pl-12 pr-12 py-4 bg-gray/30 backdrop-blur-sm border border-gray-400 rounded-xl placeholder-gray-600 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all ${className}`}
         />
         {type === 'password' && (
           <button

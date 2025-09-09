@@ -1,11 +1,19 @@
 import {Card,Button } from '../components/ui';
 import { Plus, Users, LogOut } from 'lucide-react';
 import {useNavigate} from 'react-router-dom';
+import { useQuiz } from '../features/quiz/useQuiz';
+import { useEffect } from 'react';
 const HomePage = ({ user, onLogout }) => {
-    const navigate=useNavigate();
-    
+    const navigate = useNavigate();
+    const { quizState,getQuiz } = useQuiz();
+    const quizzes = quizState.quiz || [];
+    console.log("Quiz State:", quizzes);
+
+    useEffect(()=>{
+        if(!quizzes.length)getQuiz();
+    }, [quizzes]);
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-teal-50 p-4">
+  <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <Card className="p-6 mb-8">
@@ -24,10 +32,33 @@ const HomePage = ({ user, onLogout }) => {
           </div>
         </Card>
 
-        {/* Main Actions */}
-        <div className="grid md:grid-cols-2 gap-8">
-          <Card className="p-8 text-center hover:scale-105 transition-transform cursor-pointer" onClick={() => navigate('/create-room')}>
-            <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full mx-auto mb-6 flex items-center justify-center">
+        {/* User's Created Quizzes */}
+        <Card className="mb-8 p-6">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">Your Quizzes</h3>
+          {quizzes && quizzes.length > 0 ? (
+            <div className="grid md:grid-cols-2 gap-4">
+              {quizzes.map((quiz) => (
+                <div key={quiz._id} className="p-4 border rounded-lg bg-white flex justify-between items-center">
+                  <div>
+                    <h4 className="font-semibold text-gray-800">{quiz.title || 'Untitled Quiz'}</h4>
+                    <p className="text-sm text-gray-500">{quiz.description || `${quiz.questions?.length || 0} questions`}</p>
+                  </div>
+                  <div className="flex space-x-2">
+                    {/* <Button variant="ghost" onClick={() => navigate(`/quiz/${quiz.id || quiz._id}`)}>Open</Button>
+                    <Button variant="secondary" onClick={() => navigate(`/edit-quiz/${quiz.id || quiz._id}`)}>Edit</Button> */}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-500">You haven't created any quizzes yet. Create your first quiz to see it here.</div>
+          )}
+        </Card>
+
+      {/* Main Actions */}
+      <div className="grid md:grid-cols-2 gap-8">
+          <Card className="p-8 text-center hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer"  onClick={() => navigate('/create')}>
+            <div className="w-20 h-20 bg-purple-600 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-sm">
               <Plus className="text-white" size={32} />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-3">Create Quiz Room</h2>
@@ -35,13 +66,13 @@ const HomePage = ({ user, onLogout }) => {
             <Button variant="primary" className="w-full">Get Started</Button>
           </Card>
 
-          <Card className="p-8 text-center hover:scale-105 transition-transform cursor-pointer" onClick={() => navigate('/join-room')}>
-            <div className="w-20 h-20 bg-gradient-to-r from-teal-400 to-teal-500 rounded-full mx-auto mb-6 flex items-center justify-center">
+          <Card className="p-8 text-center hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer" onClick={() => navigate('/join')}>
+            <div className="w-20 h-20 bg-teal-500 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-sm">
               <Users className="text-white" size={32} />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-3">Join Quiz Room</h2>
             <p className="text-gray-600 mb-6">Enter a room code and compete with other players</p>
-            <Button onClick={()=>{navigate('/join-room')}} variant="secondary" className="w-full">Join Now</Button>
+            <Button onClick={()=>{navigate('/join')}} variant="secondary" className="w-full">Join Now</Button>
           </Card>
         </div>
  
