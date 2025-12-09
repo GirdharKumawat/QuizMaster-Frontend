@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { Users, Hash, ArrowRight, ShieldCheck, Home } from 'lucide-react';
+import { Users, Hash, ArrowRight, Home } from 'lucide-react';
 import { Card, Button, Input } from '../components/ui';
 import { useNavigate } from 'react-router-dom';
+import { useQuiz } from '../features/quiz/useQuiz';
 
 // Presentational + light validation Join Room page
 // Navigates to /waiting-room with state when join succeeds.
 function RoomJoinPage() {
   const navigate = useNavigate();
+  const { joinQuiz,getEnrolledQuizzes } = useQuiz();
   const [roomCode, setRoomCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const normalized = roomCode.trim().toUpperCase();
-  
+  const normalized = roomCode.trim();
+  const isValidCode = true
   const handleJoin = async (e) => {
     e?.preventDefault();
     setError('');
@@ -23,17 +25,15 @@ function RoomJoinPage() {
     
     setLoading(true);
     // Simulated API delay
-    setTimeout(() => {
+    const result = await joinQuiz(normalized);
+    if(result ){
+    setLoading(false);
+    await getEnrolledQuizzes();
+    navigate(`/waiting/${normalized}`);
+    } else {
       setLoading(false);
-      navigate('/waiting-room', {
-        state: {
-          roomId: normalized,
-          isHost: false,
-          participants: [{ id: 'you', name: 'You', status: 'ready' }],
-          settings: { title: 'Quiz Lobby', code: normalized, questionCount: 0, timePerQuestion: 20, autoStart: false }
-        }
-      });
-    }, 900);
+      setError('Failed to join room. Please check the code and try again.');
+    }
   };
 
   return (
@@ -58,13 +58,10 @@ function RoomJoinPage() {
               id="roomCode"
               placeholder="QUIZ123"
               value={roomCode}
-              onChange={e => setRoomCode(e.target.value.toUpperCase())}
-              className={`tracking-widest font-mono text-lg ${error ? 'border-red-300 focus:ring-red-400' : ''}`}
+              onChange={e => setRoomCode(e.target.value)}
+              className={` font-mono italic ${error ? 'border-red-300 focus:ring-red-400' : ''}`}
             />
-            <div className="flex justify-between mt-1">
-              <p className="text-xs text-gray-500">4–10 letters / numbers</p>
-              {isValidCode && <span className="text-[10px] text-green-600 font-medium flex items-center gap-1"><ShieldCheck size={12}/> OK</span>}
-            </div>
+             
             {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
           </div>
 

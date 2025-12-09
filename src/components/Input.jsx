@@ -7,7 +7,7 @@ const Input = ({ icon: Icon, type = 'text', placeholder, value, onChange, classN
 
     return (
       <div className="relative">
-        <div className="absolute z-200 left-4 top-1/2 transform -translate-y-1/2 text-gray-600">
+        <div className="absolute z-200 left-4 top-1/2 transform -translate-y-1/2 text-gray-500">
           <Icon size={20} />
         </div>
         <input
@@ -15,13 +15,13 @@ const Input = ({ icon: Icon, type = 'text', placeholder, value, onChange, classN
           placeholder={placeholder}
           value={value}
           onChange={onChange}
-          className={`w-full pl-12 pr-12 py-4 bg-gray/30 backdrop-blur-sm border border-gray-400 rounded-xl placeholder-gray-600 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all ${className}`}
+          className={`w-full pl-12 pr-12 py-4 bg-white/90 border border-gray-300 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${className}`}
         />
         {type === 'password' && (
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-purple-600 transition-colors"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-purple-600 transition-colors"
           >
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>

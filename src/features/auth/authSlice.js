@@ -18,7 +18,6 @@ export const checkAuthentication = createAsyncThunk(
     }
   }
 );
-console.log("checkAuthentication thunk created");
 const initialState = {
   loading: false,
   isAuthenticated: false,
@@ -41,10 +40,11 @@ const authSlice = createSlice({
     },
 
     setUser(state, action) {
-      const { id, username, email } = action.payload;
-      if (id !== undefined) state.id = id;
-      if (username !== undefined) state.username = username;
-      if (email !== undefined) state.email = email;
+      const { _id, username, email } = action.payload;
+      if(_id) state.id = _id;
+      if(username) state.username = username;
+      if(email) state.email = email;
+      
     },
   },
   extraReducers: (builder) => {

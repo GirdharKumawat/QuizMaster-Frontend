@@ -3,9 +3,11 @@ import { createSlice } from "@reduxjs/toolkit";
 
 
 const initialQuizState = {
-  quiz:[],
+  createdQuizzes:[],
+  enrolledQuizzes:[],
   loading: false,
   error: null,
+  canTry: true,
 };
 
 const quizSlice = createSlice({
@@ -18,12 +20,21 @@ const quizSlice = createSlice({
         setError(state, action) {
             state.error = action.payload;
         },
-        setQuiz(state, action) {
-            state.quiz = action.payload;
+        
+        setCretedQuizzes(state, action) {
+            state.createdQuizzes = action.payload;
+        },
+        setEnrolledQuizzes(state, action) {
+            state.enrolledQuizzes = action.payload;
+        },
+
+        setCanTry(state, action) {
+            state.canTry = action.payload;
         }
+        
     }
    
 });
 
-export const { setLoading, setError, setQuiz } = quizSlice.actions;
+export const { setLoading, setError, setCretedQuizzes,setEnrolledQuizzes ,setCanTry } = quizSlice.actions;
 export default quizSlice.reducer;

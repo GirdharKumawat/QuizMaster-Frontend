@@ -18,9 +18,9 @@ function Routing() {
                     <Route path='/' element={<ProtectedRoute><HomePage/></ProtectedRoute>} />
                     <Route path='/join' element={<ProtectedRoute><RoomJoinPage /></ProtectedRoute>} />
                     <Route path='/create' element={<ProtectedRoute><CreateRoomPage /></ProtectedRoute>} />
-                    <Route path='/waiting' element={<ProtectedRoute><WaitingRoomPage /></ProtectedRoute>} />
-                    <Route path='/quiz' element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
-                    <Route path='/leaderboard' element={<ProtectedRoute><LeaderBordPage /></ProtectedRoute>} />
+                    <Route path='/waiting/:quizid' element={<ProtectedRoute><WaitingRoomPage /></ProtectedRoute>} />
+                    <Route path='/quiz/:quizid' element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
+                    <Route path='/leaderboard/:quizid' element={<ProtectedRoute><LeaderBordPage /></ProtectedRoute>} />
 
                     <Route path='/login' element={<SigninPage />} />
                     <Route path='/signup' element={<SignupPage />} />

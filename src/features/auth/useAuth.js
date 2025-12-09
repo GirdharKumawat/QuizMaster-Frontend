@@ -166,7 +166,7 @@ export function useAuth() {
       // ensure trailing slash to match backend routes
       const res = await axiosAPI.get("user/profile/");
       dispatch(setLoading(false));
-      dispatch(setUser(res.data.data));
+      dispatch(setUser(res.data));
       dispatch(setIsAuthenticated(true));
     } catch (error) {
       // If token expired (401 error), try to refresh
@@ -198,6 +198,7 @@ export function useAuth() {
   };
 
   return {
+    authState,
     checkAuth,
     loginUser,
     signupUser,

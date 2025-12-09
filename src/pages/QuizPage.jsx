@@ -1,89 +1,140 @@
-import React, { useState, useEffect } from 'react';
-import { Clock, Trophy } from 'lucide-react';
-import { Card, Button } from '../components/ui';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Clock, Trophy } from "lucide-react";
+import { Card, Button } from "../components/ui";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuiz } from "../features/quiz/useQuiz";
+import { useAuth } from "../features/auth/useAuth";
 
-/**
- * QuizPage (presentational + local demo state)
- * Aligns with shared Card & Button components used elsewhere.
- */
-const demoQuestions = [
-  { id: 1, text: 'What is the capital of France?', options: ['London', 'Berlin', 'Paris', 'Madrid'], correctAnswer: 'Paris', points: 10 },
-  { id: 2, text: 'What is the largest planet in our solar system?', options: ['Earth', 'Jupiter', 'Saturn', 'Neptune'], correctAnswer: 'Jupiter', points: 10 },
-  { id: 3, text: 'Which language runs in a web browser?', options: ['Python', 'C++', 'JavaScript', 'Java'], correctAnswer: 'JavaScript', points: 10 },
-  { id: 4, text: 'Who painted the Mona Lisa?', options: ['Van Gogh', 'Da Vinci', 'Picasso', 'Rembrandt'], correctAnswer: 'Da Vinci', points: 10 }
-];
-
-const demoLeaderboard = [
-  { name: 'You', score: 250, position: 1 },
-  { name: 'Alice', score: 240, position: 2 },
-  { name: 'Bob', score: 220, position: 3 },
-  { name: 'Charlie', score: 200, position: 4 },
-  { name: 'David', score: 180, position: 5 }
-];
-
-function QuizPage({
-  questions = demoQuestions,
-  leaderboard = demoLeaderboard,
-  onQuizComplete,
-  initialTimeSeconds = 60 * 30,
-}) {
+function QuizPage() {
   const navigate = useNavigate();
-  const { code } = useParams();
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(initialTimeSeconds);
-  const [answer, setAnswer] = useState('');
-  const [answers, setAnswers] = useState([]);
-  const [score, setScore] = useState(250); // demo
+  const { quizid } = useParams();
+  const { id } = useAuth().authState;
+  const { quizState, getCurrentQuestion, submitAnswer,getCretedQuizzes,getEnrolledQuizzes } = useQuiz();
 
-  const currentQuestion = questions[currentQuestionIndex];
-  const isLast = currentQuestionIndex === questions.length - 1;
-  const progress = (currentQuestionIndex / questions.length) * 100;
+  const createdQuizzes = quizState.createdQuizzes || [];
+  const enrolledQuizzes = quizState.enrolledQuizzes || [];
+
+  const quizzes = [...createdQuizzes, ...enrolledQuizzes];
+
+  const currQuiz = quizzes.find((q) => q._id === quizid) || {};
+
+  console.log("Current Quiz Data:", currQuiz);
+
+  const currParticipant =
+    currQuiz.participants?.find((p) => p.user_id === id) || {};
+
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(
+    currParticipant.currentQuestionIndex || 0
+  );
+  const [currentQuestion, setCurrentQuestion] = useState({});
+  const [answer, setAnswer] = useState("");
+  // local UI state
+  const [timeLeft, setTimeLeft] = useState(currParticipant.timeLeft || 600);
+  const [score, setScore] = useState(currParticipant.score || 0);
+  const [leaderboard, setLeaderboard] = useState(currQuiz.participants || []);
+
+  const isLast = currentQuestionIndex === currQuiz.questionCount - 1;
+  const progress = currQuiz.questionCount
+    ? (currentQuestionIndex / currQuiz.questionCount) * 100
+    : 0;
+
+    // get quizzes if not already loaded
+  useEffect(() => {
+    if (!quizzes.length && quizState.canTry) {
+      getCretedQuizzes();
+      getEnrolledQuizzes();
+    }
+  }, );
+
+
+
+  // get first question on load
+  useEffect(() => {
+    (async () => {
+      try {
+        const questionData = await getCurrentQuestion(quizid);
+
+        console.log("Fetched question data:", questionData);
+        setCurrentQuestion(questionData);
+
+        /* {
+        
+      "question": "question 1",
+      "options": [ "Option 1", "Option 2", "Option 4", "Option 3"],
+   
+}*/
+      } catch (err) {
+        console.error("Failed to fetch question data on load:", err);
+      }
+    })();
+  }, [quizid]);
 
   useEffect(() => {
     const id = setInterval(() => {
-      setTimeLeft(t => {
+      setTimeLeft((t) => {
         if (t <= 1) {
           clearInterval(id);
-            handleEnd();
+          handleEnd();
           return 0;
         }
         return t - 1;
       });
     }, 1000);
     return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const formatTime = (s) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
-  const timeColor = timeLeft > 600 ? 'text-green-600' : timeLeft > 300 ? 'text-orange-500' : 'text-red-500';
-
-  const recordAnswer = () => ({
-    questionId: currentQuestion.id,
-    answer,
-    isCorrect: answer === currentQuestion.correctAnswer
-  });
+  const formatTime = (s) =>
+    `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
+  const timeColor =
+    timeLeft > 600
+      ? "text-green-600"
+      : timeLeft > 300
+      ? "text-orange-500"
+      : "text-red-500";
 
   const handleNext = () => {
-    setAnswers(prev => [...prev, recordAnswer()]);
-    if (!isLast) {
-      setCurrentQuestionIndex(i => i + 1);
-      setAnswer('');
-    } else {
-      handleEnd();
-    }
+    // submit answer (best-effort) and advance to next question locally
+    (async () => {
+      try {
+        // minimal payload; backend may ignore missing fields
+        await submitAnswer(quizid, { answer });
+      } catch (err) {
+        console.error("submitAnswer failed", err);
+      }
+
+      // advance locally
+      setAnswer("");
+      if (!isLast) {
+        setCurrentQuestionIndex((i) => i + 1);
+        // reset timer to next question's timeLimit if available
+        if (questions[currentQuestionIndex + 1]?.timeLimit) {
+          setTimeLeft(questions[currentQuestionIndex + 1].timeLimit);
+        }
+      } else {
+        // finished
+        navigate(`/leaderboard/${quizid}`);
+      }
+    })();
   };
 
-  const handleEnd = () => {
-    let final = answers;
-    if (answer && !answers.find(a => a.questionId === currentQuestion.id)) {
-      final = [...answers, recordAnswer()];
+  const handleEnd = async () => {
+    // called when timer runs out for a question
+    try {
+      // attempt to submit current answer (may be empty)
+      await submitAnswer(quizid, { answer });
+    } catch (err) {
+      console.error("submitAnswer on end failed", err);
     }
-    const payload = { answers: final, score, timeLeft };
-    if (onQuizComplete) {
-      onQuizComplete(payload);
+
+    // move to next question or finish
+    setAnswer("");
+    if (isLast) {
+      navigate(`/`);
     } else {
-      navigate(`/leaderboard/${code || 'DEMO'}`, { state: { results: payload, leaderboard } });
+      setCurrentQuestionIndex((i) => i + 1);
+      if (questions[currentQuestionIndex + 1]?.timeLimit) {
+        setTimeLeft(questions[currentQuestionIndex + 1].timeLimit);
+      }
     }
   };
 
@@ -102,7 +153,7 @@ function QuizPage({
               <span className="font-semibold text-gray-800">{score} pts</span>
             </Card>
             <Card className="px-4 py-2 flex items-center gap-2 text-sm text-gray-600" variant="outline">
-              Question {currentQuestionIndex + 1} / {questions.length}
+              Question {currentQuestionIndex + 1} / {currQuiz.questionCount}
             </Card>
           </div>
           <div className="w-full md:w-1/3 h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -119,7 +170,7 @@ function QuizPage({
                 Live Leaderboard
               </h3>
               <ul className="space-y-2">
-                {leaderboard.slice(0, 5).map(p => (
+                {(leaderboard || []).slice(0, 5).map(p => (
                   <li
                     key={p.position}
                     className={`flex items-center justify-between rounded-xl border px-4 py-2.5 text-sm ${p.name === 'You' ? 'bg-purple-50 border-purple-300' : 'bg-white border-gray-200 hover:border-purple-300'} transition-colors`}
@@ -133,7 +184,7 @@ function QuizPage({
                 ))}
               </ul>
               <div className="mt-6 pt-5 border-t border-gray-200 space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">Completed</span><span className="font-medium">{currentQuestionIndex}/{questions.length}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Completed</span><span className="font-medium">{currentQuestionIndex}/{currQuiz.questionCount}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Score</span><span className="font-medium text-purple-600">{score}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Time Left</span><span className={`font-medium ${timeColor}`}>{formatTime(timeLeft)}</span></div>
               </div>
@@ -148,13 +199,13 @@ function QuizPage({
           <Card className="p-6 md:p-8 space-y-6 lg:col-span-2" interactive>
             <div className="flex items-start justify-between gap-4">
               <span className="text-xs uppercase tracking-wide font-medium bg-purple-100 text-purple-700 px-3 py-1 rounded-full">Multiple Choice</span>
-              <span className="text-sm text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded-md">{currentQuestion.points} pt{currentQuestion.points > 1 && 's'}</span>
+              {/* <span className="text-sm text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded-md">{currentQuestion.points} pt{currentQuestion.points > 1 && 's'}</span> */}
             </div>
-            <h2 className="text-xl md:text-2xl font-semibold text-gray-800 leading-snug">{currentQuestion.text}</h2>
+            <h2 className="text-xl md:text-2xl font-semibold text-gray-800 leading-snug">{currentQuestion.question}</h2>
 
             <div className="space-y-5">
               <ul className="space-y-3" role="radiogroup" aria-label="Answer choices">
-                {currentQuestion.options.map(opt => {
+                {(currentQuestion.options || []).map(opt => {
                   const selected = answer === opt;
                   return (
                     <li key={opt}>
@@ -186,9 +237,11 @@ function QuizPage({
             </div>
           </Card>
         </div>
+
       </div>
     </div>
   );
+
 }
 
 export default QuizPage;

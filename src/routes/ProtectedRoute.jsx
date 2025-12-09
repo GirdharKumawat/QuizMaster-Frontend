@@ -1,11 +1,10 @@
 import React, { useEffect ,useState} from "react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/useAuth";
 
 function ProtectedRoute({ children }) {
-    const { isAuthenticated } = useSelector((state) => state.auth);
-    const { checkAuth } = useAuth();
+    const { checkAuth ,authState } = useAuth();
+    const { isAuthenticated } = authState;
     const navigate = useNavigate();
     const [isChecking, setIsChecking] = useState(true);
 

@@ -30,7 +30,7 @@ const SigninPage = () => {
             icon={Mail}
             type="email"
             required
-            placeholder="Email or Username"
+            placeholder="Email"
             value={formData.email}
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
