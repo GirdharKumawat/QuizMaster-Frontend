@@ -1,24 +1,30 @@
-import axiosAPI from "../../axios";
- import { useDispatch,useSelector } from "react-redux";
-import {  setLoading, setError, setCretedQuizzes ,setCanTry,setEnrolledQuizzes} from "./quizSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { 
+    setLoading, 
+    setError, 
+    setCreatedQuizzes, 
+    addCreatedQuiz, 
+    setEnrolledQuizzes, 
+    addEnrolledQuiz, 
+    setCanTry 
+} from "./quizSlice";
 import { toast } from "sonner";
+import { quizApi } from "../../api/quizApi"; // Import API Layer
 
-const useQuiz = () => {
+export const useQuiz = () => {
     const quizState = useSelector((state) => state.quiz);
     const dispatch = useDispatch();
-    //  
-    //  
 
-    const getCretedQuizzes = async (quizId) => {
+    // 1. Fetch Created Quizzes (Dashboard)
+    const getCreatedQuizzes = async () => {
         try {
             dispatch(setLoading(true));
-            const res = await axiosAPI.get(`quizzes/created/`);
-            const data = res.data;
-             
-            dispatch(setCretedQuizzes(data.quizzes));
+            const res = await quizApi.getDashboard(); 
+            console.log(res.data)
+            dispatch(setCreatedQuizzes(res.data));
             dispatch(setCanTry(false));   
         } catch (err) {
-            const errorMsg = err.response?.data?.message || err.message || "Failed to fetch quiz.";
+            const errorMsg = err.response?.data?.message || "Failed to fetch created quizzes.";
             dispatch(setError(errorMsg));
             toast.error(errorMsg);
         } finally {
@@ -26,15 +32,15 @@ const useQuiz = () => {
         }
     };
 
-    const getEnrolledQuizzes = async (quizId) => {
+    // 2. Fetch Enrolled Quizzes
+    const getEnrolledQuizzes = async () => {
         try {
             dispatch(setLoading(true));
-            const res = await axiosAPI.get(`quizzes/enrolled/`);
-            const data = res.data; 
-            dispatch(setEnrolledQuizzes(data.quizzes));
+            const res = await quizApi.getEnrolled();
+            dispatch(setEnrolledQuizzes(res.data.quizzes || res.data));
             dispatch(setCanTry(false));   
         } catch (err) {
-            const errorMsg = err.response?.data?.message || err.message || "Failed to fetch quiz.";
+            const errorMsg = err.response?.data?.message || "Failed to fetch enrolled quizzes.";
             dispatch(setError(errorMsg));
             toast.error(errorMsg);
         } finally {
@@ -42,17 +48,22 @@ const useQuiz = () => {
         }
     };
 
+    // 3. Create a New Quiz
     const createQuiz = async (quizData) => {
         try {
             dispatch(setLoading(true));
-            const res = await axiosAPI.post("quizzes/create/", quizData);
-            const data = res.data;
-            // store returned quiz data in state (adjust as needed)
-            dispatch(setCretedQuizzes(data || []));
+            const res = await quizApi.create(quizData);
+            const newQuiz = res.data;
+            
+            // Optimization: Update Redux immediately without re-fetching
+            if (newQuiz) {
+                dispatch(addCreatedQuiz(newQuiz));
+            }
+            
             toast.success("Quiz created successfully!");
-            return data;
+            return newQuiz;
         } catch (err) {
-            const errorMsg = err.response?.data?.message || err.message || "Failed to create quiz.";
+            const errorMsg = err.response?.data?.message || "Failed to create quiz.";
             dispatch(setError(errorMsg));
             toast.error(errorMsg);
             return null;
@@ -61,84 +72,40 @@ const useQuiz = () => {
         }
     };
 
-    const joinQuiz = async (quizId) => {
+    // 4. Join a Quiz
+    const joinQuiz = async (quiz_id) => {
         try {
             dispatch(setLoading(true));
-            const res = await axiosAPI.post(`quizzes/${quizId}/join/`);
-            const data = res.data;
-            // store returned quiz data in state (adjust as needed)
-            console.log("Joined quiz data:", data);
+            const res = await quizApi.join({ quiz_id: quiz_id });
+            const joinedQuiz = res.data;
+
+            // Optimization: Update Redux immediately
+            // (Assuming backend returns the quiz details on join)
+            if (joinedQuiz) {
+                // If backend structure differs, you might need to map it before pushing
+                dispatch(addEnrolledQuiz(joinedQuiz));
+            }
+
             toast.success("Joined quiz successfully!");
-            return data;
-        }
-        catch (err) {
-            const errorMsg = err.response?.data?.message || err.message || "Failed to join quiz.";
-            dispatch(setError(errorMsg));
-            toast.error(err.response.data.detail);
-            return null;
-        }
-        
-    }
-
-    const startQuiz = async (quizId) => {
-        console.log("Starting quiz with ID:", quizId);
-        try {
-            dispatch(setLoading(true));
-            const  res  = await axiosAPI.post(`quizzes/${quizId}/start/`);
-            const data = res.data;
-            toast.success("Quiz started successfully!");
-            return data;
+            return joinedQuiz;
         } catch (err) {
-            const errorMsg = err.response?.data?.message || err.message || "Failed to start quiz.";
+            const errorMsg = err.response?.data?.message || "Failed to join quiz.";
             dispatch(setError(errorMsg));
-            toast.error(errorMsg);
+            toast.error(err.response?.data?.detail || errorMsg);
             return null;
         } finally {
             dispatch(setLoading(false));
         }
     };
 
-    const getCurrentQuestion = async (quiz_id) => {
-        try {
-            const res = await axiosAPI.get(`quizzes/${quiz_id}/question/`);
-            const data = res.data;
-            return data;
-        } catch (err) {
-            const errorMsg = err.response?.data?.message || err.message || "Failed to fetch current question.";
-            dispatch(setError(errorMsg));
-            toast.error(errorMsg);
-            return null;
-        }  
-
-    }
-
-    const submitAnswer = async (quiz_id, answerData) => {
-        try {
-            const res = await axiosAPI.post(`quizzes/${quiz_id}/submit/`, answerData);
-            const data = res.data;
-            return data;
-        }
-        catch (err) {
-            const errorMsg = err.response?.data?.message || err.message || "Failed to submit answer.";
-            dispatch(setError(errorMsg));
-            toast.error(errorMsg);
-            return null;
-        }
-    };
-
-
+    // NOTE: startQuiz, submitAnswer, etc. are moved to 'useQuizGame.js' 
+    // because they belong to "Gameplay", not "Management".
 
     return {
         quizState,
-        getCretedQuizzes,
+        getCreatedQuizzes,
         getEnrolledQuizzes,
         createQuiz,
         joinQuiz,
-        startQuiz,
-        getCurrentQuestion,
-        submitAnswer
     };
-}
-
-export { useQuiz };
-
+};

@@ -1,247 +1,204 @@
-import React, { useState, useEffect } from "react";
-import { Clock, Trophy } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Clock, Trophy, CheckCircle } from "lucide-react";
 import { Card, Button } from "../components/ui";
-import { useNavigate, useParams } from "react-router-dom";
+import { useQuizGame } from "../features/quiz/useQuizGame";
 import { useQuiz } from "../features/quiz/useQuiz";
-import { useAuth } from "../features/auth/useAuth";
 
 function QuizPage() {
-  const navigate = useNavigate();
   const { quizid } = useParams();
-  const { id } = useAuth().authState;
-  const { quizState, getCurrentQuestion, submitAnswer,getCretedQuizzes,getEnrolledQuizzes } = useQuiz();
+  const navigate = useNavigate();
 
-  const createdQuizzes = quizState.createdQuizzes || [];
-  const enrolledQuizzes = quizState.enrolledQuizzes || [];
+  const {
+    loading,
+    loadGame,
+    currentQuestion,
+    currentIndex,
+    totalQuestions,
+    score,
+    timeLeft,
+    participants,
+    submitAnswer,
+  } = useQuizGame(quizid);
 
-  const quizzes = [...createdQuizzes, ...enrolledQuizzes];
-
-  const currQuiz = quizzes.find((q) => q._id === quizid) || {};
-
-  console.log("Current Quiz Data:", currQuiz);
-
-  const currParticipant =
-    currQuiz.participants?.find((p) => p.user_id === id) || {};
-
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(
-    currParticipant.currentQuestionIndex || 0
-  );
-  const [currentQuestion, setCurrentQuestion] = useState({});
-  const [answer, setAnswer] = useState("");
-  // local UI state
-  const [timeLeft, setTimeLeft] = useState(currParticipant.timeLeft || 600);
-  const [score, setScore] = useState(currParticipant.score || 0);
-  const [leaderboard, setLeaderboard] = useState(currQuiz.participants || []);
-
-  const isLast = currentQuestionIndex === currQuiz.questionCount - 1;
-  const progress = currQuiz.questionCount
-    ? (currentQuestionIndex / currQuiz.questionCount) * 100
-    : 0;
-
-    // get quizzes if not already loaded
-  useEffect(() => {
-    if (!quizzes.length && quizState.canTry) {
-      getCretedQuizzes();
-      getEnrolledQuizzes();
-    }
-  }, );
-
-
-
-  // get first question on load
-  useEffect(() => {
-    (async () => {
-      try {
-        const questionData = await getCurrentQuestion(quizid);
-
-        console.log("Fetched question data:", questionData);
-        setCurrentQuestion(questionData);
-
-        /* {
-        
-      "question": "question 1",
-      "options": [ "Option 1", "Option 2", "Option 4", "Option 3"],
-   
-}*/
-      } catch (err) {
-        console.error("Failed to fetch question data on load:", err);
-      }
-    })();
-  }, [quizid]);
+  const [selectedOption, setSelectedOption] = useState("");
 
   useEffect(() => {
-    const id = setInterval(() => {
-      setTimeLeft((t) => {
-        if (t <= 1) {
-          clearInterval(id);
-          handleEnd();
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
+    loadGame();
   }, []);
 
-  const formatTime = (s) =>
-    `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
-  const timeColor =
-    timeLeft > 600
-      ? "text-green-600"
-      : timeLeft > 300
-      ? "text-orange-500"
-      : "text-red-500";
+  const handleNext = async () => {
+    if (!selectedOption) return;
 
-  const handleNext = () => {
-    // submit answer (best-effort) and advance to next question locally
-    (async () => {
-      try {
-        // minimal payload; backend may ignore missing fields
-        await submitAnswer(quizid, { answer });
-      } catch (err) {
-        console.error("submitAnswer failed", err);
-      }
+    await submitAnswer(selectedOption);
+    setSelectedOption("");
 
-      // advance locally
-      setAnswer("");
-      if (!isLast) {
-        setCurrentQuestionIndex((i) => i + 1);
-        // reset timer to next question's timeLimit if available
-        if (questions[currentQuestionIndex + 1]?.timeLimit) {
-          setTimeLeft(questions[currentQuestionIndex + 1].timeLimit);
-        }
-      } else {
-        // finished
-        navigate(`/leaderboard/${quizid}`);
-      }
-    })();
+    loadGame();
   };
 
-  const handleEnd = async () => {
-    // called when timer runs out for a question
-    try {
-      // attempt to submit current answer (may be empty)
-      await submitAnswer(quizid, { answer });
-    } catch (err) {
-      console.error("submitAnswer on end failed", err);
-    }
+  const progress = totalQuestions ? (currentIndex / totalQuestions) * 100 : 0;
+  const isLast = currentIndex === totalQuestions - 1;
 
-    // move to next question or finish
-    setAnswer("");
-    if (isLast) {
-      navigate(`/`);
-    } else {
-      setCurrentQuestionIndex((i) => i + 1);
-      if (questions[currentQuestionIndex + 1]?.timeLimit) {
-        setTimeLeft(questions[currentQuestionIndex + 1].timeLimit);
-      }
-    }
-  };
+  if (loading && !currentQuestion) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-xl font-semibold text-purple-600 animate-pulse">
+          Loading Question...
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50/40 p-4 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-4 md:p-6">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Top Bar */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {/* Top Bar (HUD) */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-wrap gap-3">
-            <Card className="px-4 py-2 flex items-center gap-2" variant="outline">
-              <Clock size={18} className={timeColor} />
-              <span className={`font-mono font-semibold ${timeColor}`}>{formatTime(timeLeft)}</span>
+            <Card className="px-4 py-2 flex items-center gap-2 border-purple-100">
+              <Clock size={18} className="text-purple-600" />
+              <span className="font-mono font-bold text-gray-700">
+                {timeLeft}
+              </span>
             </Card>
-            <Card className="px-4 py-2 flex items-center gap-2" variant="outline">
+
+            <Card className="px-4 py-2 flex items-center gap-2 border-yellow-100">
               <Trophy size={18} className="text-yellow-500" />
-              <span className="font-semibold text-gray-800">{score} pts</span>
+              <span className="font-bold text-gray-700">{score} pts</span>
             </Card>
-            <Card className="px-4 py-2 flex items-center gap-2 text-sm text-gray-600" variant="outline">
-              Question {currentQuestionIndex + 1} / {currQuiz.questionCount}
+
+            <Card className="px-4 py-2 flex items-center gap-2 border-gray-100 text-sm text-gray-600">
+              Question {currentIndex + 1} / {totalQuestions}
             </Card>
           </div>
-          <div className="w-full md:w-1/3 h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all" style={{ width: `${progress}%` }} />
+
+          {/* Progress Bar */}
+          <div className="w-full md:w-1/3 h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+            <div
+              className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-500 ease-out"
+              style={{ width: `${progress}%` }}
+            />
           </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3 items-start">
-          {/* Leaderboard - now on the left */}
+          {/* Left Column: Live Leaderboard */}
           <div className="space-y-6 lg:sticky lg:top-4">
-            <Card className="p-5" variant="elevated">
+            <Card className="p-5 border-purple-100 shadow-sm">
               <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <Trophy size={18} className="text-yellow-500" />
-                Live Leaderboard
+                Live Standings
               </h3>
-              <ul className="space-y-2">
-                {(leaderboard || []).slice(0, 5).map(p => (
-                  <li
-                    key={p.position}
-                    className={`flex items-center justify-between rounded-xl border px-4 py-2.5 text-sm ${p.name === 'You' ? 'bg-purple-50 border-purple-300' : 'bg-white border-gray-200 hover:border-purple-300'} transition-colors`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold ${p.position === 1 ? 'bg-yellow-500' : p.position === 2 ? 'bg-gray-500' : p.position === 3 ? 'bg-orange-500' : 'bg-gray-400'}`}>{p.position}</span>
-                      <span className={`font-medium ${p.name === 'You' ? 'text-purple-800' : 'text-gray-800'}`}>{p.name}</span>
-                    </div>
-                    <span className="font-semibold text-gray-700">{p.score}</span>
-                  </li>
-                ))}
+
+              <ul className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+                {participants
+                  .sort((a, b) => b.score - a.score)
+                  .slice(0, 5)
+                  .map((p, index) => (
+                    <li
+                      key={p.user_id || index}
+                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm border ${
+                        false
+                          ? "bg-purple-50 border-purple-200"
+                          : "bg-white border-gray-100"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
+                            index === 0
+                              ? "bg-yellow-400"
+                              : index === 1
+                              ? "bg-gray-400"
+                              : index === 2
+                              ? "bg-orange-400"
+                              : "bg-purple-300"
+                          }`}
+                        >
+                          {index + 1}
+                        </span>
+                        <span className="font-medium text-gray-700 truncate max-w-[100px]">
+                          {p.name}
+                        </span>
+                      </div>
+                      <span className="font-bold text-gray-800">{p.score}</span>
+                    </li>
+                  ))}
               </ul>
-              <div className="mt-6 pt-5 border-t border-gray-200 space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">Completed</span><span className="font-medium">{currentQuestionIndex}/{currQuiz.questionCount}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Score</span><span className="font-medium text-purple-600">{score}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Time Left</span><span className={`font-medium ${timeColor}`}>{formatTime(timeLeft)}</span></div>
-              </div>
-            </Card>
-            <Card className="p-4 text-xs text-gray-600" variant="subtle">
-              <p className="mb-1 font-semibold text-gray-700">Tip</p>
-              <p>Answer quickly for potential bonus (add logic later). Keep this tab focused to avoid time loss.</p>
             </Card>
           </div>
 
-          {/* Question - now on the right (col-span-2) */}
-          <Card className="p-6 md:p-8 space-y-6 lg:col-span-2" interactive>
-            <div className="flex items-start justify-between gap-4">
-              <span className="text-xs uppercase tracking-wide font-medium bg-purple-100 text-purple-700 px-3 py-1 rounded-full">Multiple Choice</span>
-              {/* <span className="text-sm text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded-md">{currentQuestion.points} pt{currentQuestion.points > 1 && 's'}</span> */}
-            </div>
-            <h2 className="text-xl md:text-2xl font-semibold text-gray-800 leading-snug">{currentQuestion.question}</h2>
+          {/* Right Column: Question Area */}
+          <Card className="p-6 md:p-8 space-y-8 lg:col-span-2 shadow-md border-0">
+            {currentQuestion ? (
+              <>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-start">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-800 leading-snug">
+                      {currentQuestion.question}
+                    </h2>
+                  </div>
+                  {/* <p className="text-gray-500 text-sm">Select the best answer below:</p> */}
+                </div>
 
-            <div className="space-y-5">
-              <ul className="space-y-3" role="radiogroup" aria-label="Answer choices">
-                {(currentQuestion.options || []).map(opt => {
-                  const selected = answer === opt;
-                  return (
-                    <li key={opt}>
+                <div className="grid gap-3">
+                  {(currentQuestion.options || []).map((opt, idx) => {
+                    const isSelected = selectedOption === opt;
+                    return (
                       <button
-                        type="button"
-                        onClick={() => setAnswer(opt)}
-                        className={`w-full text-left border rounded-xl px-5 py-4 flex items-center gap-3 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400 ${selected ? 'border-purple-400 bg-purple-50 shadow-sm' : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50/40'}`}
-                        aria-pressed={selected}
+                        key={idx}
+                        onClick={() => setSelectedOption(opt)}
+                        className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 group ${
+                          isSelected
+                            ? "border-purple-500 bg-purple-50 shadow-md transform scale-[1.01]"
+                            : "border-gray-100 hover:border-purple-200 hover:bg-gray-50"
+                        }`}
                       >
-                        <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[10px] ${selected ? 'border-purple-500 bg-purple-500 text-white' : 'border-gray-400 text-transparent'}`}>●</span>
-                        <span className="font-medium text-gray-800">{opt}</span>
+                        <div
+                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                            isSelected
+                              ? "border-purple-500 bg-purple-500 text-white"
+                              : "border-gray-300 group-hover:border-purple-300"
+                          }`}
+                        >
+                          {isSelected && <CheckCircle size={14} />}
+                        </div>
+                        <span
+                          className={`font-medium ${
+                            isSelected ? "text-purple-900" : "text-gray-700"
+                          }`}
+                        >
+                          {opt}
+                        </span>
                       </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+                    );
+                  })}
+                </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-gray-200">
-              <div className="text-sm text-gray-500">{answer ? 'Answer selected' : 'Select / enter an answer'}</div>
-              <Button
-                variant="primary"
-                disabled={!answer.trim()}
-                onClick={handleNext}
-                className="px-7 py-3 text-sm font-semibold"
-              >
-                {isLast ? 'Finish Quiz' : 'Next Question'}
-              </Button>
-            </div>
+                <div className="pt-6 border-t border-gray-100 flex justify-end">
+                  <Button
+                    onClick={handleNext}
+                    disabled={!selectedOption}
+                    className={`px-8 py-3 text-lg font-semibold shadow-lg transition-all ${
+                      !selectedOption
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:-translate-y-1 shadow-purple-200"
+                    }`}
+                  >
+                    {isLast ? "Finish Quiz" : "Next Question"}
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-20 text-gray-400">
+                <p>No question data available.</p>
+              </div>
+            )}
           </Card>
         </div>
-
       </div>
     </div>
   );
-
 }
 
 export default QuizPage;

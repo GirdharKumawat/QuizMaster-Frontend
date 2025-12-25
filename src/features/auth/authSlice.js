@@ -1,29 +1,27 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axiosAPI from "../../axios";
- 
+import { authApi } from "../../api/authApi"; // Import the API Layer
 
 // Create an async thunk for checking authentication
 export const checkAuthentication = createAsyncThunk(
   "user/checkAuthentication",
-
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axiosAPI.get("user/isauthenticated/");
-  // Prefer returning an explicit boolean from the API response when possible.
-  // If the API doesn't provide a field, default to false to avoid assuming auth.
-  return Boolean(res.data?.authenticated ?? false);
+      const res = await authApi.checkAuth();
+      // Prefer returning an explicit boolean from the API response
+      return Boolean(res.data?.authenticated ?? false);
     } catch (err) {
       console.error("Auth check failed", err.response?.data);
       return rejectWithValue(false);
     }
   }
 );
+
 const initialState = {
   loading: false,
   isAuthenticated: false,
   id: null,
   username: "",
-  email: "",
+  email: "", 
 };
 
 const authSlice = createSlice({
@@ -35,16 +33,15 @@ const authSlice = createSlice({
     },
 
     setIsAuthenticated(state, action) {
-  // Coerce to boolean to avoid undefined being written into the state.
-  state.isAuthenticated = action.payload;
+      state.isAuthenticated = !!action.payload;
     },
 
     setUser(state, action) {
-      const { _id, username, email } = action.payload;
-      if(_id) state.id = _id;
-      if(username) state.username = username;
-      if(email) state.email = email;
-      
+      const { _id, id, username, email } = action.payload;
+      // robust check for both id formats
+      if (_id || id) state.id = _id || id;
+      if (username) state.username = username;
+      if (email) state.email = email;
     },
   },
   extraReducers: (builder) => {
@@ -54,8 +51,7 @@ const authSlice = createSlice({
       })
       .addCase(checkAuthentication.fulfilled, (state, action) => {
         state.loading = false;
-  // Ensure the value stored is always a boolean.
-  state.isAuthenticated = !!action.payload;
+        state.isAuthenticated = !!action.payload;
       })
       .addCase(checkAuthentication.rejected, (state) => {
         state.loading = false;

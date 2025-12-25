@@ -1,135 +1,214 @@
-import React, { useEffect } from 'react';
-import { useParams,useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Trophy, Home, Medal, Loader2 } from 'lucide-react';
 import { Card, Button } from '../components/ui';
-import { Trophy, Home, RotateCcw, Medal } from 'lucide-react';
 
 import { useQuiz } from '../features/quiz/useQuiz';
 import { useAuth } from '../features/auth/useAuth';
-
-
-// This page now reads live data from location.state (no demo data)
+import { useQuizGame } from '../features/quiz/useQuizGame';
 
 function LeaderBordPage() {
-	const { quizid } = useParams();
-	const { quizState ,getCretedQuizzes,getEnrolledQuizzes } = useQuiz();
-	const { authState } = useAuth();
-	const navigate = useNavigate();
+    const { quizid } = useParams();
+    const navigate = useNavigate();
+    
+    // 1. Global State
+    const { quizState, getCreatedQuizzes, getEnrolledQuizzes } = useQuiz();
+    const { authState, fetchUser } = useAuth();
+    
+    // 2. Game Logic (Sockets)
+    // We use this to get REAL-TIME updates if people are still playing
+    const { participants, setInitialParticipants } = useQuizGame(quizid);
 
-	const quizzes = [...quizState.createdQuizzes, ...quizState.enrolledQuizzes];
-	const currQuiz = quizzes.find((q) => q._id === quizid) || {};
+    // --- DATA PREP ---
+    const { id: userId } = authState;
+    const createdQuizzes = quizState.createdQuizzes || [];
+    const enrolledQuizzes = quizState.enrolledQuizzes || [];
 
+    // Find the quiz in Redux
+    const currentQuiz = [...createdQuizzes, ...enrolledQuizzes].find(q => q._id === quizid) || {};
+    // Determine loading state: if we don't have the quiz ID yet and global loading is true
+    const isLoading = quizState.loading && !currentQuiz._id;
 
+    // --- INITIALIZATION ---
+    useEffect(() => {
+        // 1. Ensure User Loaded
+        if (!userId) fetchUser();
 
-	const leaderboard = (currQuiz.participants || [])
-		.map((p, index) => ({
-			position: index + 1,
-			name: p.username,
-			score: p.score,
-		}))
-		.sort((a, b) => b.score - a.score);
-	const yourScore = leaderboard.find(p => p.name === authState.username)?.score || 0;
+        // 2. Ensure Quiz Data Loaded (Refresh Protection)
+        if (!currentQuiz._id && quizState.canTry) {
+            getCreatedQuizzes();
+            getEnrolledQuizzes();
+        }
 
-	console.log("Leaderboard data:", { quizid, currQuiz, leaderboard, yourScore });
+        // 3. Sync Redux Data to Hook State
+        // This sets the "Initial" list so the socket has something to update
+        if (currentQuiz.participants) {
+            setInitialParticipants(currentQuiz.participants);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [quizid, currentQuiz._id]); 
+    // Dependency on _id ensures this runs once the fetch completes
 
+    // --- DERIVED STATE ---
+    // Sort participants by score (Descending)
+    const sortedLeaderboard = useMemo(() => {
+        // Use the hook's 'participants' if available (it has live updates), 
+        // fallback to Redux 'currentQuiz.participants'
+        const list = participants.length > 0 ? participants : (currentQuiz.participants || []);
+        
+        return list
+            .map((p) => ({
+                id: p.user_id,
+                name: p.username || p.name || "Unknown",
+                score: p.score || 0,
+            }))
+            .sort((a, b) => b.score - a.score)
+            .map((p, index) => ({ ...p, position: index + 1 }));
+            
+    }, [participants, currentQuiz.participants]);
 
-	useEffect(() => {
-		
-		if(!quizzes.length&& quizState.canTry) {
-			// fetch quizzes if not already loaded
-			getCretedQuizzes();
-			getEnrolledQuizzes();
-		}
+    const yourStats = sortedLeaderboard.find(p => p.id === userId);
 
+    // --- RENDER ---
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <Loader2 className="animate-spin text-purple-600" size={40} />
+            </div>
+        );
+    }
 
-	}, [quizzes]);
-	 
-	 
+    return (
+        <div className="relative min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-4 md:p-8 overflow-hidden">
+            {/* Background Decor */}
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(168,85,247,0.05),transparent_60%)]" />
+            
+            <div className="relative max-w-6xl mx-auto space-y-10">
+                {/* Header */}
+                <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+                    <div className="space-y-1">
+                        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 tracking-tight flex items-center gap-3">
+                            <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-lg ring-4 ring-white/70">
+                                <Trophy size={28} />
+                            </span>
+                            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
+                                Leaderboard
+                            </span>
+                        </h1>
+                        <p className="text-sm text-gray-500 font-mono ml-1">
+                            {currentQuiz.title || "Quiz Session"}
+                        </p>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-3">
+                        <Button
+                            variant="secondary"
+                            onClick={() => navigate('/')}
+                            className="px-6 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 shadow-sm"
+                        >
+                            <Home size={18} className="mr-2" />
+                            Dashboard
+                        </Button>
+                    </div>
+                </header>
 
-	return (
-		<div className="relative min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-4 md:p-8 overflow-hidden">
-			<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(168,85,247,0.05),transparent_60%)]" />
-			<div className="relative max-w-6xl mx-auto space-y-10">
-				<header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 animate-fade-in">
-					<div className="space-y-1">
-						<h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 tracking-tight flex items-center gap-3">
-							<span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-lg ring-4 ring-white/70"> <Trophy size={28} /> </span>
-							<span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">Final Leaderboard</span>
-						</h1>
-						<p className="text-xs md:text-sm text-gray-500 font-mono">Room Id: {quizid || 'DEMO'}</p>
-					</div>
-					<div className="flex flex-wrap gap-3">
-						<Button
-							variant="secondary"
-							onClick={() => navigate('/')}
-							className="px-6 py-3 rounded-xl font-semibold shadow-md border-2 border-gray-200 hover:border-purple-400 hover:bg-purple-50 transition-all flex items-center gap-2 text-base"
-						>
-							<Home size={18} className="mr-2 text-purple-600" />
-							<span className="">Home</span>
-						</Button>
-						 
-						 
-					</div>
-				</header>
+                <div className="grid gap-8 md:grid-cols-3 items-start">
+                    
+                    {/* Main Table */}
+                    <Card className="p-0 md:col-span-2 overflow-hidden border-0 shadow-xl shadow-purple-100/50 ring-1 ring-gray-100">
+                        <div className="p-6 border-b border-gray-100 bg-white flex justify-between items-center">
+                            <h3 className="font-semibold text-gray-800 text-lg">Rankings</h3>
+                            <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-wide">
+                                {participants.length > 0 ? "Live Updates" : "Final"}
+                            </span>
+                        </div>
+                        
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full text-sm">
+                                <thead className="bg-gray-50/50">
+                                    <tr className="text-left text-gray-500">
+                                        <th className="py-3 px-6 font-medium w-16">#</th>
+                                        <th className="py-3 px-6 font-medium">Player</th>
+                                        <th className="py-3 px-6 font-medium text-right">Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {sortedLeaderboard.map((p) => {
+                                        const isYou = p.id === userId;
+                                        return (
+                                            <tr 
+                                                key={p.id || p.name} 
+                                                className={`transition-colors ${isYou ? 'bg-purple-50/60' : 'bg-white hover:bg-gray-50'}`}
+                                            >
+                                                <td className="py-4 px-6 font-bold text-gray-400">
+                                                    {p.position === 1 ? <Medal className="text-yellow-500" size={20}/> : 
+                                                     p.position === 2 ? <Medal className="text-gray-400" size={20}/> :
+                                                     p.position === 3 ? <Medal className="text-amber-600" size={20}/> : 
+                                                     p.position}
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${isYou ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                                                            {p.name.charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <span className={`font-medium ${isYou ? 'text-purple-900' : 'text-gray-700'}`}>
+                                                            {p.name}
+                                                            {isYou && <span className="ml-2 text-[10px] bg-purple-200 text-purple-700 px-1.5 py-0.5 rounded-full">YOU</span>}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="py-4 px-6 text-right font-bold text-gray-800">
+                                                    {p.score}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                    {sortedLeaderboard.length === 0 && (
+                                        <tr>
+                                            <td colSpan="3" className="py-8 text-center text-gray-400 italic">
+                                                No participants yet.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Card>
 
-				{/* Simplified header area — podium removed for now */}
-				<div className="py-4" />
+                    {/* Side Panel (Stats) */}
+                    <div className="space-y-6">
+                        <Card className="p-6 bg-white shadow-lg shadow-indigo-100/50 border-0 ring-1 ring-gray-100">
+                            <h3 className="font-semibold text-gray-800 mb-5 flex items-center gap-2">
+                                <span className="w-1.5 h-6 bg-purple-500 rounded-full"/>
+                                Your Performance
+                            </h3>
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <span className="text-gray-500 text-sm">Rank</span>
+                                    <span className="font-bold text-gray-800 text-lg">
+                                        {yourStats?.position ? `#${yourStats.position}` : '-'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <span className="text-gray-500 text-sm">Score</span>
+                                    <span className="font-bold text-purple-600 text-lg">
+                                        {yourStats?.score || 0}
+                                    </span>
+                                </div>
+                            </div>
+                        </Card>
 
-				{/* Full Table & Stats */}
-				<div className="grid gap-8 md:grid-cols-3 items-start">
-					<Card className="p-6 md:col-span-2">
-						<div className="flex items-center justify-between mb-4">
-							<h3 className="font-semibold text-gray-800 text-lg">All Players <span className="text-xs font-normal text-gray-400">(live)</span></h3>
-							<span className="text-[11px] uppercase tracking-wide text-gray-400">{leaderboard.length} Entrants</span>
-						</div>
-						<div className="relative overflow-x-auto -mx-2 rounded-lg ring-1 ring-gray-200/60">
-							<table className="min-w-full text-sm relative">
-								<caption className="sr-only">Final player rankings</caption>
-								<thead>
-									<tr className="text-left text-gray-500 border-b bg-white/70 backdrop-blur sticky top-0 z-10">
-										<th scope="col" className="py-2 px-3 font-medium">Pos</th>
-										<th scope="col" className="py-2 px-3 font-medium">Player</th>
-										<th scope="col" className="py-2 px-3 font-medium">Score</th>
-									</tr>
-								</thead>
-								<tbody className="divide-y divide-gray-200/70">
-									{leaderboard.map(p => {
-										const isYou = p.name === 'You';
-										return (
-											<tr key={p.position} className={`relative ${isYou ? 'bg-gradient-to-r from-purple-50 to-indigo-50' : ''}`}>
-												<td className="py-2 px-3 font-semibold text-gray-700 whitespace-nowrap">{p.position}</td>
-												<td className="py-2 px-3 font-medium text-gray-800">{p.name}{isYou && <span className="text-[10px] bg-purple-200 text-purple-700 px-1.5 py-0.5 rounded-full ml-2">YOU</span>}</td>
-												<td className="py-2 px-3 font-semibold text-gray-800">{p.score}</td>
-											</tr>
-										);
-									})}
-									{leaderboard.length === 0 && (
-										<tr>
-											<td colSpan="3" className="py-8 text-center text-gray-500 text-sm">No player data yet.</td>
-										</tr>
-									)}
-								</tbody>
-							</table>
-						</div>
-					</Card>
-					<div className="space-y-6">
-						<Card className="p-6 animate-fade-in [--delay:260ms]">
-							<h3 className="font-semibold text-gray-800 mb-5">Your Stats</h3>
-							<ul className="space-y-3 text-sm">
-								<li className="flex justify-between"><span className="text-gray-500">Score</span><span className="font-semibold text-purple-700">{yourScore}</span></li>
-								{/* <li className="flex justify-between"><span className="text-gray-500">Correct</span><span className="font-medium">{correctCount}/{totalQuestions}</span></li>
-								<li className="flex justify-between"><span className="text-gray-500">Accuracy</span><span className="font-medium">{accuracy}%</span></li> */}
-								{/* <li className="flex justify-between"><span className="text-gray-500">Rank</span><span className="font-medium">{yourself?.position || '—'}</span></li> */}
-							</ul>
-						</Card>
-						<Card className="p-5 text-xs text-gray-600 animate-fade-in [--delay:320ms]" variant="subtle">
-							<p className="mb-1 font-semibold text-gray-700">Next Steps</p>
-							<p>Share your score, rejoin another room, or create a new quiz. Real actions to be wired later.</p>
-						</Card>
-					</div>
-				</div>
-			</div>
-		</div>
-	);
+                        <Card className="p-5 text-xs text-gray-500 bg-gradient-to-br from-gray-50 to-white border border-gray-100">
+                            <p className="mb-2 font-semibold text-gray-700">What's Next?</p>
+                            <p className="leading-relaxed">
+                                Wait for the host to restart, or head back to the dashboard to join a new room.
+                            </p>
+                        </Card>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 export default LeaderBordPage;

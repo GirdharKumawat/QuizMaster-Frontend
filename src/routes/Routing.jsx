@@ -7,13 +7,12 @@ import QuizPage from '../pages/QuizPage'
 import LeaderBordPage from '../pages/LeaderBord'
 import ProtectedRoute from './ProtectedRoute'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import HomePage from '../pages/Home';
+import HomePage from '../pages/HomePage';
  
 
 function Routing() {
   return (
-    <>
-      <BrowserRouter>
+    <BrowserRouter>
                 <Routes>
                     <Route path='/' element={<ProtectedRoute><HomePage/></ProtectedRoute>} />
                     <Route path='/join' element={<ProtectedRoute><RoomJoinPage /></ProtectedRoute>} />
@@ -26,7 +25,6 @@ function Routing() {
                     <Route path='/signup' element={<SignupPage />} />
                 </Routes>
             </BrowserRouter>
-    </>
   )
 }
 

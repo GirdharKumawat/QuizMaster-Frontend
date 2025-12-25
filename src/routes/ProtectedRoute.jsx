@@ -16,7 +16,8 @@ function ProtectedRoute({ children }) {
                     if (!isValid) {
                         navigate("/login");
                     }
-                } catch (error) {
+                } catch (err) {
+                    console.error("Error during auth check", err);
                     navigate("/login");
                 }
             }
@@ -28,8 +29,9 @@ function ProtectedRoute({ children }) {
 
     if (isChecking) {
         return (
+            // <div></div>
             <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-500"></div>
             </div>
         );
     }
