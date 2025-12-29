@@ -7,7 +7,7 @@ import { useQuizGame } from "../features/quiz/useQuizGame"; // Import the hook
 import { toast } from "sonner";
 
 function WaitingRoomPage() {
-  const { quizid } = useParams();
+  const { session_id } = useParams();
   const navigate = useNavigate();
 
   // 1. Global State (User & Quiz Lists)
@@ -19,15 +19,13 @@ function WaitingRoomPage() {
   const { id: userId } = authState;
   const createdQuizzes = quizState.createdQuizzes || [];
   const enrolledQuizzes = quizState.enrolledQuizzes || [];
-  
+
   // Find the quiz object from Redux state
-  const currentQuiz = [...createdQuizzes, ...enrolledQuizzes].find(q => q.quiz_id === quizid) || {};
+  const currentQuiz = [...createdQuizzes, ...enrolledQuizzes].find(q => q.session_id === session_id) || {};
   const isHost = currentQuiz.host_id === userId;
-  const session_id = currentQuiz.session_id || null; 
   
    // 2. Game Logic Hook (Sockets & Actions)
-   console.log("Rendering WaitingRoomPage with session_id:", session_id, "isHost:", isHost, "quizid:", quizid);
-  const { startQuiz, participants, setInitialParticipants } = useQuizGame( session_id,isHost,quizid);
+  const { startQuiz, participants, setInitialParticipants } = useQuizGame( session_id,isHost, currentQuiz.quiz_id );
   
   
   useEffect(() => {
@@ -45,7 +43,7 @@ function WaitingRoomPage() {
         setInitialParticipants(currentQuiz.participants);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quizid, currentQuiz.quiz_id]); 
+  }, [session_id, currentQuiz.quiz_id]); 
   // Note: We depend on _id to trigger once the quiz loads
 
   // --- HANDLERS ---
@@ -55,7 +53,7 @@ function WaitingRoomPage() {
     }else if((currentQuiz.status==="active"))
     {
         toast.success("Quiz Already Started! Redirecting...");
-        navigate(`/quiz/${quizid}`);
+        navigate(`/quiz/${session_id}`);
     }
     
     else {
@@ -64,7 +62,7 @@ function WaitingRoomPage() {
   };
 
   const copyCode = () => {
-      navigator.clipboard.writeText(quizid);
+      navigator.clipboard.writeText(session_id);
       toast.success("Room code copied!");
   };
 
@@ -94,7 +92,7 @@ function WaitingRoomPage() {
                     className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-md transition-colors font-mono cursor-pointer"
                     title="Click to copy"
                 >
-                  Code: {quizid}
+                  Code: {session_id}
                 </button>
                 <span className="bg-gray-50 px-3 py-1 rounded-md border border-gray-100">
                   {currentQuiz.question_count || 0} Questions

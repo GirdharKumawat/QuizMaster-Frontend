@@ -20,7 +20,6 @@ export const useQuiz = () => {
         try {
             dispatch(setLoading(true));
             const res = await quizApi.getDashboard(); 
-            console.log(res.data)
             dispatch(setCreatedQuizzes(res.data));
             dispatch(setCanTry(false));   
         } catch (err) {
@@ -73,10 +72,10 @@ export const useQuiz = () => {
     };
 
     // 4. Join a Quiz
-    const joinQuiz = async (quiz_id) => {
+    const joinQuiz = async (session_id) => {
         try {
             dispatch(setLoading(true));
-            const res = await quizApi.join({ quiz_id: quiz_id });
+            const res = await quizApi.join({ session_id: session_id });
             const joinedQuiz = res.data;
 
             // Optimization: Update Redux immediately

@@ -65,7 +65,7 @@ const HomePage = () => {
               {createdQuizzes.map((quiz) => (
                 <button
                   key={quiz.quiz_id}
-                  onClick={() => navigate(`/waiting/${quiz.quiz_id}`)}
+                  onClick={() => navigate(`/waiting/${quiz.session_id}`)}
                   className="p-4 border border-gray-100 rounded-xl bg-white hover:shadow-md hover:border-purple-200 cursor-pointer transition-all group text-left"
                 >
                   <div className="flex justify-between items-start">
@@ -102,7 +102,7 @@ const HomePage = () => {
               {enrolledQuizzes.map((quiz) => (
                 <button
                   key={quiz.quiz_id}
-                  onClick={() => navigate(`/waiting/${quiz.quiz_id}`)}
+                  onClick={() => navigate(`/waiting/${quiz.session_id}`)}
                   className="p-4 border border-gray-100 rounded-xl bg-white hover:shadow-md hover:border-teal-200 cursor-pointer transition-all group text-left"
                 >
                    <h4 className="font-semibold text-gray-800 group-hover:text-teal-700 transition-colors">

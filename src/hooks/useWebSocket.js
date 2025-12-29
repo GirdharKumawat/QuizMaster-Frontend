@@ -12,7 +12,6 @@ export const useWebSocket = (sessionId, handlers = {}) => {
         const cleanHost = API_ENDPOINT.replace(/^https?:\/\//, '').replace(/\/$/, '');
         const wsUrl = `${wsProtocol}//${cleanHost}/ws/quiz/${sessionId}/`;
 
-        console.log(" Connecting to WS:", wsUrl);
         socketRef.current = new WebSocket(wsUrl);
 
         socketRef.current.onopen = () => console.log("✅ WebSocket Connected");

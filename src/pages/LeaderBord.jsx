@@ -6,9 +6,10 @@ import { Card, Button } from '../components/ui';
 import { useQuiz } from '../features/quiz/useQuiz';
 import { useAuth } from '../features/auth/useAuth';
 import { useQuizGame } from '../features/quiz/useQuizGame';
+import { quizApi } from '../api/quizApi';
 
 function LeaderBordPage() {
-    const { quizid } = useParams();
+    const { session_id } = useParams();
     const navigate = useNavigate();
     
     // 1. Global State
@@ -17,7 +18,6 @@ function LeaderBordPage() {
     
     // 2. Game Logic (Sockets)
     // We use this to get REAL-TIME updates if people are still playing
-    const { participants, setInitialParticipants } = useQuizGame(quizid);
 
     // --- DATA PREP ---
     const { id: userId } = authState;
@@ -25,17 +25,25 @@ function LeaderBordPage() {
     const enrolledQuizzes = quizState.enrolledQuizzes || [];
 
     // Find the quiz in Redux
-    const currentQuiz = [...createdQuizzes, ...enrolledQuizzes].find(q => q._id === quizid) || {};
+    const currentQuiz = [...createdQuizzes, ...enrolledQuizzes].find(q => q.session_id === session_id) || {};
+    const isHost = currentQuiz.host_id === userId;
+
+    const { participants, setInitialParticipants } = useQuizGame(session_id, isHost);
+    console.log("Participants from useQuizGame:", participants);
+
     // Determine loading state: if we don't have the quiz ID yet and global loading is true
-    const isLoading = quizState.loading && !currentQuiz._id;
+    const isLoading = quizState.loading && !currentQuiz.session_id;
 
     // --- INITIALIZATION ---
     useEffect(() => {
+
+
+
         // 1. Ensure User Loaded
         if (!userId) fetchUser();
 
         // 2. Ensure Quiz Data Loaded (Refresh Protection)
-        if (!currentQuiz._id && quizState.canTry) {
+        if (!currentQuiz.quiz_id && quizState.canTry) {
             getCreatedQuizzes();
             getEnrolledQuizzes();
         }
@@ -44,10 +52,37 @@ function LeaderBordPage() {
         // This sets the "Initial" list so the socket has something to update
         if (currentQuiz.participants) {
             setInitialParticipants(currentQuiz.participants);
+            console.log("Initial participants set from Redux:", currentQuiz.participants);
         }
+        console.log("Current Quiz participants:", participants);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [quizid, currentQuiz._id]); 
+    }, [ currentQuiz.quiz_id]); 
     // Dependency on _id ensures this runs once the fetch completes
+
+    // Fetch leaderboard from API to seed local state when sockets haven't sent anything yet
+    useEffect(() => {
+        const fetchLeaderboard = async () => {
+            try {
+                const res = await quizApi.getLeaderboard(session_id);
+                const leaderboardData = res.data?.participants || res.data?.leaderboard || res.data || [];
+                const normalized = Array.isArray(leaderboardData)
+                    ? leaderboardData.map((p) => ({
+                        user_id: p.user_id ?? p.id, 
+                        username: p.username || p.name,
+                        name: p.username || p.name || "Unknown",
+                        score: p.total_score ?? p.score ?? 0,
+                    }))
+                    : [];
+
+                setInitialParticipants(normalized);
+                console.log("Leaderboard fetched from API:", normalized);
+            } catch (err) {
+                console.error("Failed to fetch leaderboard", err);
+            }
+        };
+
+        fetchLeaderboard();
+    }, [session_id, setInitialParticipants]);
 
     // --- DERIVED STATE ---
     // Sort participants by score (Descending)
@@ -68,7 +103,8 @@ function LeaderBordPage() {
     }, [participants, currentQuiz.participants]);
 
     const yourStats = sortedLeaderboard.find(p => p.id === userId);
-
+    console.log("Sorted Leaderboard:", sortedLeaderboard);
+    console.log("Your Stats:", yourStats);
     // --- RENDER ---
     if (isLoading) {
         return (
@@ -176,7 +212,7 @@ function LeaderBordPage() {
                     </Card>
 
                     {/* Side Panel (Stats) */}
-                    <div className="space-y-6">
+                    {!isHost && <div className="space-y-6">
                         <Card className="p-6 bg-white shadow-lg shadow-indigo-100/50 border-0 ring-1 ring-gray-100">
                             <h3 className="font-semibold text-gray-800 mb-5 flex items-center gap-2">
                                 <span className="w-1.5 h-6 bg-purple-500 rounded-full"/>
@@ -204,7 +240,8 @@ function LeaderBordPage() {
                                 Wait for the host to restart, or head back to the dashboard to join a new room.
                             </p>
                         </Card>
-                    </div>
+                    </div> 
+                     }
                 </div>
             </div>
         </div>

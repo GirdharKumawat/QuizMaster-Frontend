@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Clock, Trophy, CheckCircle } from "lucide-react";
 import { Card, Button } from "../components/ui";
 import { useQuizGame } from "../features/quiz/useQuizGame";
-import { useQuiz } from "../features/quiz/useQuiz";
 
 function QuizPage() {
-  const { quizid } = useParams();
-  const navigate = useNavigate();
+  const { session_id } = useParams();
+
+
 
   const {
     loading,
@@ -19,7 +19,7 @@ function QuizPage() {
     timeLeft,
     participants,
     submitAnswer,
-  } = useQuizGame(quizid);
+  } = useQuizGame(session_id);
 
   const [selectedOption, setSelectedOption] = useState("");
 
@@ -91,7 +91,7 @@ function QuizPage() {
               </h3>
 
               <ul className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
-                {participants
+                {[...participants]
                   .sort((a, b) => b.score - a.score)
                   .slice(0, 5)
                   .map((p, index) => (
@@ -107,12 +107,13 @@ function QuizPage() {
                         <span
                           className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
                             index === 0
-                              ? "bg-yellow-400"
+                              ? "bg-yellow-500"
                               : index === 1
                               ? "bg-gray-400"
                               : index === 2
-                              ? "bg-orange-400"
-                              : "bg-purple-300"
+                              ? "bg-yellow-700"
+                              : "bg-gray-300"
+
                           }`}
                         >
                           {index + 1}

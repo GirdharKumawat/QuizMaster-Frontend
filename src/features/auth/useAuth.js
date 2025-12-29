@@ -31,13 +31,8 @@ export function useAuth() {
   const loginUser = async (credentials) => {
     try {
       dispatch(setLoading(true));
-      console.log("Logging in with credentials:", credentials);
-
       const res = await authApi.login(credentials);
       const data = res.data;
-
-      console.log("Login response data:", data);
-
       dispatch(setLoading(false));
       dispatch(setIsAuthenticated(true));
       
@@ -57,13 +52,9 @@ export function useAuth() {
   const signupUser = async (credentials) => {
     try {
       dispatch(setLoading(true));
-     
-      console .log("Signing up with credentials:", credentials);
-
       const res = await authApi.signup(credentials);
       const data = res.data;
 
-      console.log("Signup response data:", data);
 
       dispatch(setLoading(false));
       dispatch(setIsAuthenticated(true));
@@ -89,7 +80,6 @@ export function useAuth() {
       toast.success("Logout successful");
       navigate("/login");
     } catch (error) {
-      console.log("Logout failed", error);
       dispatch(setIsAuthenticated(false));
       toast.error("Logout failed");
     } finally {
@@ -101,9 +91,6 @@ export function useAuth() {
     try {
       dispatch(setLoading(true));
       const res = await authApi.getProfile();
-
-      console.log("Fetched user profile:", res.data);
-
       dispatch(setLoading(false));
   
       dispatch(setUser(res.data.data || res.data)); 

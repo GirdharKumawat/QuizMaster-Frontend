@@ -5,19 +5,14 @@ import { quizApi } from '../../api/quizApi';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { useTimer } from '../../hooks/useTimer';
 
-export const useQuizGame = (sessionId,isHost,quiz_id) => {
-
-    console.log("useQuizGame initialized with sessionId:", sessionId, "isHost:", isHost, "quiz_id:", quiz_id);
+export const useQuizGame = (session_id,isHost) => {
 
     const navigate = useNavigate();
     
-    // --- STATE ---
     const [loading, setLoading] = useState(false);
     
-    // Lobby State
     const [participants, setParticipants] = useState([]); 
-    
-    // Gameplay State
+   
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [totalQuestions, setTotalQuestions] = useState(0);
@@ -30,7 +25,6 @@ export const useQuizGame = (sessionId,isHost,quiz_id) => {
     const handleWsMessage = useCallback((data) => {
         switch(data.type) {
             case 'participant_joined':
-                console.log("Participant joined:", data);
                 setParticipants(prev => {
                     // Prevent duplicates
                     if (prev.find(p => p.user_id === data.user_id)) return prev;
@@ -41,34 +35,49 @@ export const useQuizGame = (sessionId,isHost,quiz_id) => {
                 break;
 
             case 'quiz_started':
-                if (!isHost) {
+                if (isHost===false) {
                 toast.success("Quiz Started! Good luck.");
-                navigate(`/quiz/${quiz_id}`);
+                navigate(`/quiz/${session_id}`);
                 }
-                else navigate(`/leaderboard/${quiz_id}`);
+                else navigate(`/leaderboard/${session_id}`);
 
                 break;
                 
             case 'quiz_ended':
                 toast.warning("The Host has ended the quiz.");
-                navigate(`/leaderboard/${quiz_id}`);
+                navigate(`/leaderboard/${session_id}`);
                 break;
 
             case 'leaderboard_update':
                 // Update specific user's score in the list
-                setParticipants(prev => prev.map(p => 
-                    p.user_id === data.user_id 
-                        ? { ...p, score: data.total_score } 
-                        : p
-                ));
+                console.log("Leaderboard update received:", data);
+                setParticipants(prev => {
+                    const existing = prev.find(p => p.user_id === data.user_id);
+                    if (existing) {
+                        return prev.map(p => 
+                            p.user_id === data.user_id 
+                                ? { ...p, score: data.total_score }
+                                : p
+                        );
+                    }
+                    // If we never had this user (e.g., page opened late), append them
+                    return [
+                        ...prev,
+                        {
+                            user_id: data.user_id,
+                            name: data.name || data.username || "Unknown",
+                            score: data.total_score || data.score || 0,
+                        }
+                    ];
+                });
                 break;
                 
             default: break;
         }
-    }, [sessionId, navigate, currentQuestion]);
+    }, [session_id, navigate, currentQuestion]);
 
     // Initialize Socket
-    useWebSocket(sessionId, {
+    useWebSocket(session_id, {
         'participant_joined': handleWsMessage,
         'quiz_started': handleWsMessage,
         'quiz_ended': handleWsMessage,
@@ -77,11 +86,13 @@ export const useQuizGame = (sessionId,isHost,quiz_id) => {
 
     // --- TIMER LOGIC ---
     const handleTimeExpire = () => {
-        // Optional: Force submit or auto-move
-        // console.log("Timer expired");
+        toast.info("Time's up for this question!");
     };
     
     const { timeLeft, formatTime } = useTimer(serverDuration, handleTimeExpire);
+
+    // Stable setter so consumers can seed initial participants without re-renders
+    const setInitialParticipants = useCallback((list) => setParticipants(list || []), []);
 
 
     // --- ACTIONS ---
@@ -90,8 +101,7 @@ export const useQuizGame = (sessionId,isHost,quiz_id) => {
     const startQuiz = async () => {
         try {
             setLoading(true);
-            console.log("Starting quiz for session:", sessionId);
-            await quizApi.startQuiz(sessionId);
+            await quizApi.startQuiz(session_id);
             // No need to navigate here; the 'quiz_started' socket event will handle it for everyone
         } catch (err) {
             console.error(err);
@@ -106,14 +116,10 @@ export const useQuizGame = (sessionId,isHost,quiz_id) => {
         try {
             setLoading(true);
             // A. Check Status (in case of refresh)
-            const statusRes = await quizApi.getStatus(sessionId);
+            const statusRes = await quizApi.getStatus(session_id);
             const { attempted_indices, current_score } = statusRes.data;
 
-            // B. Fetch Question Paper
-            console.log("Fetching paper for session:", sessionId);
-            console.log("Fetching paper for quiz:", quiz_id);
-
-            const paperRes = await quizApi.getPaper(sessionId);
+            const paperRes = await quizApi.getPaper(session_id);
 
             const { questions, duration } = paperRes.data;
 
@@ -128,7 +134,7 @@ export const useQuizGame = (sessionId,isHost,quiz_id) => {
             }
 
             if (nextIndex >= questions.length) {
-                navigate(`/leaderboard/${sessionId}`);
+                navigate(`/leaderboard/${session_id}`);
             } else {
                 setCurrentIndex(nextIndex);
                 setCurrentQuestion(questions[nextIndex]);
@@ -147,14 +153,13 @@ export const useQuizGame = (sessionId,isHost,quiz_id) => {
 
         try {
             const res = await quizApi.submitAnswer({
-                session_id: sessionId,
+                session_id: session_id,
                 question_index: currentIndex,
                 selected_option: selectedOption
             });
 
             if (res.data.points > 0) {
                 setScore(s => s + res.data.points);
-                toast.success(`Correct! +${res.data.points}`);
             }
         } catch (err) {
             console.error("Submit failed", err);
@@ -164,9 +169,22 @@ export const useQuizGame = (sessionId,isHost,quiz_id) => {
     // 4. HOST: End Quiz (Optional, but good to have)
     const endQuiz = async () => {
         try {
-            await quizApi.endQuiz(sessionId);
+            await quizApi.endQuiz(session_id);
         } catch (err) {
             toast.error("Failed to end quiz");
+        }
+    };
+
+    const getLeaderboard = async () => {
+        try {
+            setLoading(true);
+            const res = await quizApi.getLeaderboard(session_id);
+            setParticipants(res.data.leaderboard || []);
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to load leaderboard");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -185,6 +203,7 @@ export const useQuizGame = (sessionId,isHost,quiz_id) => {
         loadGame,              // Call this on QuizPage mount
         submitAnswer,          // Call this on "Next" button
         endQuiz,
-        setInitialParticipants: (list) => setParticipants(list || [])
+        getLeaderboard,
+        setInitialParticipants
     };
 };
