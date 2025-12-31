@@ -1,62 +1,48 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Play } from "lucide-react";
 import { Card, Button } from "../components/ui";
 import { useAuth } from "../features/auth/useAuth";
 import { useQuiz } from "../features/quiz/useQuiz";
-import { useQuizGame } from "../features/quiz/useQuizGame"; // Import the hook
+import { useQuizSession } from "../features/quiz/useQuizSession";
 import { toast } from "sonner";
 
 function WaitingRoomPage() {
-  const { session_id } = useParams();
   const navigate = useNavigate();
+  const { session_id } = useParams();
 
-  // 1. Global State (User & Quiz Lists)
-  const { authState, fetchUser } = useAuth();
-  const { quizState, getCreatedQuizzes, getEnrolledQuizzes } = useQuiz();
-  
- 
-  // --- INITIALIZATION ---
+  const { authState } = useAuth();
   const { id: userId } = authState;
+
+  const { quizState, getCreatedQuizzes, getEnrolledQuizzes } = useQuiz();
   const createdQuizzes = quizState.createdQuizzes || [];
   const enrolledQuizzes = quizState.enrolledQuizzes || [];
 
-  // Find the quiz object from Redux state
-  const currentQuiz = [...createdQuizzes, ...enrolledQuizzes].find(q => q.session_id === session_id) || {};
-  const isHost = currentQuiz.host_id === userId;
+  const currentQuiz = [...createdQuizzes, ...enrolledQuizzes].find(q => q.session_id === session_id) || null;
   
-   // 2. Game Logic Hook (Sockets & Actions)
-  const { startQuiz, participants, setInitialParticipants } = useQuizGame( session_id,isHost, currentQuiz.quiz_id );
+  const { startQuiz, beginQuiz, loadGame, participants, setInitialParticipants, isHost, quizReady } = useQuizSession(session_id);
   
-  
-  useEffect(() => {
-    // Ensure User is loaded
-    if (!userId) fetchUser();
 
-    // Ensure Quiz Data is loaded (Handle Refresh)
-    if (!currentQuiz.quiz_id && quizState.canTry) {
+  useEffect(() => {
+    if (!currentQuiz?.quiz_id && quizState.canTry) {
         getCreatedQuizzes();
         getEnrolledQuizzes();
     }
 
-    // Set initial participants list from the stored quiz data
-    if (currentQuiz.participants) {
+    if (currentQuiz?.participants) {
         setInitialParticipants(currentQuiz.participants);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session_id, currentQuiz.quiz_id]); 
-  // Note: We depend on _id to trigger once the quiz loads
+  }, [session_id, currentQuiz?.quiz_id]); 
 
   // --- HANDLERS ---
   const handleStart = async () => {
     if (isHost) {
         await startQuiz();
-    }else if((currentQuiz.status==="active"))
-    {
-        toast.success("Quiz Already Started! Redirecting...");
+    } else if (quizReady || currentQuiz?.status === "active") {
+        // Quiz is ready, load game data then navigate to start screen
+        await loadGame();
         navigate(`/quiz/${session_id}`);
-    }
-    
-    else {
+    } else {
         toast.error("Only the host can start the quiz.");
     }
   };
@@ -67,7 +53,7 @@ function WaitingRoomPage() {
   };
 
   // --- UI PREP ---
-  if (!currentQuiz.quiz_id && quizState.loading) return <div className="p-10 text-center">Loading Room...</div>;
+  if (!currentQuiz?.quiz_id && quizState.loading) return <div className="p-10 text-center">Loading Room...</div>;
 
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-8">
@@ -83,7 +69,7 @@ function WaitingRoomPage() {
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 relative z-10">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold text-gray-800">
-                {currentQuiz.title || "Loading Quiz..."}
+                {currentQuiz?.title || "Loading Quiz..."}
               </h1>
               
               <div className="flex flex-wrap gap-2 text-sm text-gray-600">
@@ -95,16 +81,16 @@ function WaitingRoomPage() {
                   Code: {session_id}
                 </button>
                 <span className="bg-gray-50 px-3 py-1 rounded-md border border-gray-100">
-                  {currentQuiz.question_count || 0} Questions
+                  {currentQuiz?.question_count || 0} Questions
                 </span>
                 <span className="bg-gray-50 px-3 py-1 rounded-md border border-gray-100">
-                  {currentQuiz.duration || 60}s / Q
+                  {currentQuiz?.duration || 60}s / Q
                 </span>
               </div>
             </div>
 
             {/* Start Button (Host Only) */}
-            {(isHost ||currentQuiz.status==="active")&& (
+            {isHost && (
                 <Button 
                     variant="primary" 
                     className="px-8 py-2 shadow-lg shadow-purple-200"
@@ -113,7 +99,18 @@ function WaitingRoomPage() {
                     Start Quiz
                 </Button>
             )}
-            {(!isHost && currentQuiz.status!=="active") && (
+            {/* Start Quiz button for participants when quiz is ready */}
+            {!isHost && (quizReady || currentQuiz?.status === "active") && (
+                <Button 
+                    variant="primary" 
+                    className="px-8 py-2 shadow-lg shadow-green-200 bg-green-600 hover:bg-green-700"
+                    onClick={handleStart}
+                >
+                    <Play size={18} className="mr-2" />
+                    Start Quiz
+                </Button>
+            )}
+            {!isHost && !quizReady && currentQuiz?.status !== "active" && (
                 <div className="px-4 py-2 bg-yellow-50 text-yellow-700 rounded-lg text-sm font-medium animate-pulse border border-yellow-100">
                     Waiting for host to start...
                 </div>

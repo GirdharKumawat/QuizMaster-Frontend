@@ -97,8 +97,7 @@ export const useQuiz = () => {
         }
     };
 
-    // NOTE: startQuiz, submitAnswer, etc. are moved to 'useQuizGame.js' 
-    // because they belong to "Gameplay", not "Management".
+   
 
     return {
         quizState,

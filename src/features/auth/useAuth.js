@@ -1,7 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading, setIsAuthenticated, setUser } from "./authSlice";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 import { authApi } from "../../api/authApi";  
 
 /**
@@ -10,7 +9,6 @@ import { authApi } from "../../api/authApi";
 export function useAuth() {
   const authState = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const checkAuth = async () => {
     dispatch(setLoading(true));
@@ -41,7 +39,7 @@ export function useAuth() {
       }
 
       toast.success("Login successful");
-      navigate("/"); 
+      window.location.href = "/";
     } catch (err) {
       dispatch(setLoading(false));
       dispatch(setIsAuthenticated(false));
@@ -64,7 +62,7 @@ export function useAuth() {
       }
 
       toast.success("Sign up successful");
-      navigate("/"); 
+      window.location.href = "/";
     } catch (err) {
       dispatch(setLoading(false));
       dispatch(setIsAuthenticated(false));
@@ -78,9 +76,10 @@ export function useAuth() {
       dispatch(setIsAuthenticated(false));
       dispatch(setUser({ id: null, username: "", email: "" }));
       toast.success("Logout successful");
-      navigate("/login");
+      window.location.href = "/login";
     } catch (error) {
       dispatch(setIsAuthenticated(false));
+      console.error("Logout failed", error);
       toast.error("Logout failed");
     } finally {
         dispatch(setLoading(false));

@@ -10,15 +10,12 @@ const HomePage = () => {
   
   // Custom Hooks - Logic Layer
   const { quizState, getCreatedQuizzes, getEnrolledQuizzes } = useQuiz();
-  const { authState, fetchUser, logoutUser } = useAuth();
+  const { authState, logoutUser } = useAuth();
 
   const { username } = authState;
   const { createdQuizzes, enrolledQuizzes } = quizState;
 
   useEffect(() => {
-    if (!username) {
-        fetchUser();
-    }
     getCreatedQuizzes();
     getEnrolledQuizzes();
     

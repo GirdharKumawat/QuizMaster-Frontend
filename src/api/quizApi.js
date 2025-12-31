@@ -33,4 +33,7 @@ export const quizApi = {
     
     // URL: api/quizzes/status/<id>/
     getStatus: (sessionId) => axiosAPI.get(`quizzes/status/${sessionId}/`),
+
+    // URL: api/quizzes/complete/
+    completeQuiz: (sessionId) => axiosAPI.post("quizzes/complete/", { session_id: sessionId }),
 };

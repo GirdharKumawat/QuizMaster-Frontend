@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Trophy, Home, Medal, Loader2 } from 'lucide-react';
+import { Trophy, Home, Medal, Loader2, CheckCircle } from 'lucide-react';
 import { Card, Button } from '../components/ui';
 
 import { useQuiz } from '../features/quiz/useQuiz';
 import { useAuth } from '../features/auth/useAuth';
-import { useQuizGame } from '../features/quiz/useQuizGame';
+import { useQuizSession } from '../features/quiz/useQuizSession';
 import { quizApi } from '../api/quizApi';
 
 function LeaderBordPage() {
@@ -14,52 +14,32 @@ function LeaderBordPage() {
     
     // 1. Global State
     const { quizState, getCreatedQuizzes, getEnrolledQuizzes } = useQuiz();
-    const { authState, fetchUser } = useAuth();
+    const { authState } = useAuth();
     
-    // 2. Game Logic (Sockets)
-    // We use this to get REAL-TIME updates if people are still playing
 
-    // --- DATA PREP ---
     const { id: userId } = authState;
     const createdQuizzes = quizState.createdQuizzes || [];
     const enrolledQuizzes = quizState.enrolledQuizzes || [];
 
-    // Find the quiz in Redux
     const currentQuiz = [...createdQuizzes, ...enrolledQuizzes].find(q => q.session_id === session_id) || {};
-    const isHost = currentQuiz.host_id === userId;
 
-    const { participants, setInitialParticipants } = useQuizGame(session_id, isHost);
-    console.log("Participants from useQuizGame:", participants);
+    const { participants, setInitialParticipants, isHost } = useQuizSession(session_id);
 
-    // Determine loading state: if we don't have the quiz ID yet and global loading is true
     const isLoading = quizState.loading && !currentQuiz.session_id;
 
-    // --- INITIALIZATION ---
     useEffect(() => {
-
-
-
-        // 1. Ensure User Loaded
-        if (!userId) fetchUser();
-
-        // 2. Ensure Quiz Data Loaded (Refresh Protection)
         if (!currentQuiz.quiz_id && quizState.canTry) {
             getCreatedQuizzes();
             getEnrolledQuizzes();
         }
 
-        // 3. Sync Redux Data to Hook State
-        // This sets the "Initial" list so the socket has something to update
         if (currentQuiz.participants) {
             setInitialParticipants(currentQuiz.participants);
             console.log("Initial participants set from Redux:", currentQuiz.participants);
         }
         console.log("Current Quiz participants:", participants);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ currentQuiz.quiz_id]); 
-    // Dependency on _id ensures this runs once the fetch completes
 
-    // Fetch leaderboard from API to seed local state when sockets haven't sent anything yet
     useEffect(() => {
         const fetchLeaderboard = async () => {
             try {
@@ -71,6 +51,7 @@ function LeaderBordPage() {
                         username: p.username || p.name,
                         name: p.username || p.name || "Unknown",
                         score: p.total_score ?? p.score ?? 0,
+                        status: p.status || "active",
                     }))
                     : [];
 
@@ -84,11 +65,7 @@ function LeaderBordPage() {
         fetchLeaderboard();
     }, [session_id, setInitialParticipants]);
 
-    // --- DERIVED STATE ---
-    // Sort participants by score (Descending)
     const sortedLeaderboard = useMemo(() => {
-        // Use the hook's 'participants' if available (it has live updates), 
-        // fallback to Redux 'currentQuiz.participants'
         const list = participants.length > 0 ? participants : (currentQuiz.participants || []);
         
         return list
@@ -96,6 +73,7 @@ function LeaderBordPage() {
                 id: p.user_id,
                 name: p.username || p.name || "Unknown",
                 score: p.score || 0,
+                status: p.status || "active",
             }))
             .sort((a, b) => b.score - a.score)
             .map((p, index) => ({ ...p, position: index + 1 }));
@@ -104,8 +82,7 @@ function LeaderBordPage() {
 
     const yourStats = sortedLeaderboard.find(p => p.id === userId);
     console.log("Sorted Leaderboard:", sortedLeaderboard);
-    console.log("Your Stats:", yourStats);
-    // --- RENDER ---
+   
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -165,6 +142,7 @@ function LeaderBordPage() {
                                     <tr className="text-left text-gray-500">
                                         <th className="py-3 px-6 font-medium w-16">#</th>
                                         <th className="py-3 px-6 font-medium">Player</th>
+                                        <th className="py-3 px-6 font-medium text-center">Status</th>
                                         <th className="py-3 px-6 font-medium text-right">Score</th>
                                     </tr>
                                 </thead>
@@ -193,6 +171,18 @@ function LeaderBordPage() {
                                                         </span>
                                                     </div>
                                                 </td>
+                                                <td className="py-4 px-6 text-center">
+                                                    {p.status === 'completed' ? (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                                                            <CheckCircle size={12} />
+                                                            Completed
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                                                            Active
+                                                        </span>
+                                                    )}
+                                                </td>
                                                 <td className="py-4 px-6 text-right font-bold text-gray-800">
                                                     {p.score}
                                                 </td>
@@ -201,7 +191,7 @@ function LeaderBordPage() {
                                     })}
                                     {sortedLeaderboard.length === 0 && (
                                         <tr>
-                                            <td colSpan="3" className="py-8 text-center text-gray-400 italic">
+                                            <td colSpan="4" className="py-8 text-center text-gray-400 italic">
                                                 No participants yet.
                                             </td>
                                         </tr>

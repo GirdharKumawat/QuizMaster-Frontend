@@ -1,14 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Clock, Trophy, CheckCircle } from "lucide-react";
+import { Clock, Trophy, CheckCircle, Play } from "lucide-react";
 import { Card, Button } from "../components/ui";
-import { useQuizGame } from "../features/quiz/useQuizGame";
+import { useQuizSession } from "../features/quiz/useQuizSession";
+import { useQuiz } from "../features/quiz/useQuiz"; 
 
 function QuizPage() {
   const { session_id } = useParams();
 
 
-
+  const { quizState } = useQuiz();
+  const createdQuizzes = quizState.createdQuizzes || [];
+  const enrolledQuizzes = quizState.enrolledQuizzes || [];
+  
+  
+  const currentQuiz = [...createdQuizzes, ...enrolledQuizzes].find(q => q.session_id === session_id || q._id === session_id) || {};
   const {
     loading,
     loadGame,
@@ -17,14 +23,32 @@ function QuizPage() {
     totalQuestions,
     score,
     timeLeft,
-    participants,
+    rawTimeLeft,
+    timerStarted,
     submitAnswer,
-  } = useQuizGame(session_id);
+    completeQuiz,
+    beginQuiz,
+    setInitialParticipants,
+  } = useQuizSession(session_id);
 
   const [selectedOption, setSelectedOption] = useState("");
 
+  
   useEffect(() => {
     loadGame();
+    
+    
+    
+    if (currentQuiz.participants && currentQuiz.participants.length > 0) {
+        
+        const normalized = currentQuiz.participants.map(p => ({
+            user_id: p.user_id || p.id,
+            name: p.name || p.username || "Unknown",
+            score: p.score || 0
+        }));
+        setInitialParticipants(normalized);
+    }
+    
   }, []);
 
   const handleNext = async () => {
@@ -32,6 +56,11 @@ function QuizPage() {
 
     await submitAnswer(selectedOption);
     setSelectedOption("");
+
+    // If this was the last question, mark quiz as completed
+    if (isLast) {
+      await completeQuiz();
+    }
 
     loadGame();
   };
@@ -49,15 +78,62 @@ function QuizPage() {
     );
   }
 
+  // Show "Start Quiz" screen when quiz is ready but user hasn't started yet
+  if (!timerStarted && currentQuestion) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-purple-50 p-4">
+        <Card className="max-w-lg w-full p-8 text-center space-y-6 shadow-xl border-0">
+          <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+            <Play size={36} className="text-white ml-1" />
+          </div>
+          
+          <div className="space-y-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+              Ready to Start?
+            </h1>
+            <p className="text-gray-500">
+              {currentQuiz.title || "Quiz"}
+            </p>
+          </div>
+
+          <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Total Questions</span>
+              <span className="font-semibold text-gray-800">{totalQuestions}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Time Limit</span>
+              <span className="font-semibold text-gray-800">{timeLeft}</span>
+            </div>
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+            <p>
+              <strong>Note:</strong> Once you start, the timer will begin counting down. Make sure you're ready!
+            </p>
+          </div>
+
+          <Button
+            onClick={beginQuiz}
+            className="w-full py-4 text-lg font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
+          >
+            <Play size={20} className="mr-2" />
+            Start Quiz
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-4 md:p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-3xl mx-auto space-y-6">
         {/* Top Bar (HUD) */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-wrap gap-3">
-            <Card className="px-4 py-2 flex items-center gap-2 border-purple-100">
-              <Clock size={18} className="text-purple-600" />
-              <span className="font-mono font-bold text-gray-700">
+            <Card className={`px-5 py-3 flex items-center gap-3 ${rawTimeLeft <= 60 ? 'border-red-300 bg-red-50' : 'border-purple-100'}`}>
+              <Clock size={20} className={rawTimeLeft <= 60 ? 'text-red-600' : 'text-purple-600'} />
+              <span className={`font-mono text-xl font-bold ${rawTimeLeft <= 60 ? 'text-red-700' : 'text-gray-700'}`}>
                 {timeLeft}
               </span>
             </Card>
@@ -81,56 +157,8 @@ function QuizPage() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3 items-start">
-          {/* Left Column: Live Leaderboard */}
-          <div className="space-y-6 lg:sticky lg:top-4">
-            <Card className="p-5 border-purple-100 shadow-sm">
-              <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <Trophy size={18} className="text-yellow-500" />
-                Live Standings
-              </h3>
-
-              <ul className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
-                {[...participants]
-                  .sort((a, b) => b.score - a.score)
-                  .slice(0, 5)
-                  .map((p, index) => (
-                    <li
-                      key={p.user_id || index}
-                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm border ${
-                        false
-                          ? "bg-purple-50 border-purple-200"
-                          : "bg-white border-gray-100"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                            index === 0
-                              ? "bg-yellow-500"
-                              : index === 1
-                              ? "bg-gray-400"
-                              : index === 2
-                              ? "bg-yellow-700"
-                              : "bg-gray-300"
-
-                          }`}
-                        >
-                          {index + 1}
-                        </span>
-                        <span className="font-medium text-gray-700 truncate max-w-[100px]">
-                          {p.name}
-                        </span>
-                      </div>
-                      <span className="font-bold text-gray-800">{p.score}</span>
-                    </li>
-                  ))}
-              </ul>
-            </Card>
-          </div>
-
-          {/* Right Column: Question Area */}
-          <Card className="p-6 md:p-8 space-y-8 lg:col-span-2 shadow-md border-0">
+        {/* Question Area */}
+        <Card className="p-6 md:p-8 space-y-8 shadow-md border-0">
             {currentQuestion ? (
               <>
                 <div className="space-y-4">
@@ -139,7 +167,6 @@ function QuizPage() {
                       {currentQuestion.question}
                     </h2>
                   </div>
-                  {/* <p className="text-gray-500 text-sm">Select the best answer below:</p> */}
                 </div>
 
                 <div className="grid gap-3">
@@ -196,7 +223,6 @@ function QuizPage() {
               </div>
             )}
           </Card>
-        </div>
       </div>
     </div>
   );

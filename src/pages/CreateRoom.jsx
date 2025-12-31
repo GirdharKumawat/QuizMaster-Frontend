@@ -110,9 +110,9 @@ const CreateRoomPage = () => {
     try {
         const newQuiz = await createQuiz(payload);
         
-        if (newQuiz && (newQuiz._id || newQuiz.id || newQuiz.quiz_id)) {
-            const id = newQuiz._id || newQuiz.id || newQuiz.quiz_id;
-            navigate(`/waiting/${id}`);
+        if (newQuiz) {
+            const session_id =  newQuiz.session_id;
+            navigate(`/waiting/${session_id}`);
         } else {
             // Error handled in useQuiz, but safety check here
             console.error("Invalid response", newQuiz);
