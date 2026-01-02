@@ -25,6 +25,10 @@ export const quizApi = {
     getLeaderboard: (sessionId) => axiosAPI.get(`quizzes/leaderboard/${sessionId}/`),
 
     // --- GAMEPLAY (Student) ---
+
+    startQuizForParticipant: (sessionId) => axiosAPI.post("quizzes/start-participant/", { session_id: sessionId }),
+
+
     // URL: api/quizzes/paper/<id>/
     getPaper: (sessionId) => axiosAPI.get(`quizzes/paper/${sessionId}/`),
     

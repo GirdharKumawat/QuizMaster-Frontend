@@ -1,259 +1,145 @@
-import { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import { quizApi } from '../../api/quizApi';
-import { useWebSocket } from '../../hooks/useWebSocket';
-import { useTimer } from '../../hooks/useTimer';
+import { quizApi } from "../../api/quizApi"; // Import API Layer
+import { useDispatch, useSelector } from "react-redux";
 import {
+
   setLoading,
-  setParticipants,
-  addParticipant,
-  updateParticipantScore,
-  updateParticipantStatus,
-  setQuizData,
-  incrementScore,
-  setStatus,
-  setQuizReady,
-  setTimerStarted,
-} from './currentQuizSessionSlice';
+    setLeaderBoard,
+  updateLeaderBoard,
+  setQuestions,
+  setCurrentQuestionIndex,
+  setTimeLeft,
+  setPlayerStatus,
+  setAttemptedQuestions,
+  addAttemptedQuestion,
+} from "./quizSessionSlice";
 
-export const useQuizSession = (session_id) => {
+export const useQuizSession = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const quizSession = useSelector((state) => state.quizSession);
 
-  // Get userId from auth state
-  const { id: userId } = useSelector((state) => state.auth);
-
-  // Get quiz lists to determine isHost
-  const { createdQuizzes, enrolledQuizzes } = useSelector((state) => state.quiz);
-  const currentQuiz = [...(createdQuizzes || []), ...(enrolledQuizzes || [])].find(
-    (q) => q.session_id === session_id
-  );
-  const isHost = currentQuiz?.host_id === userId;
-  const duration = currentQuiz?.duration || 60;
-
-  // Select state from Redux
-  const {
-    loading,
-    participants,
-    currentQuestion,
-    currentIndex,
-    totalQuestions,
-    score,
-    serverDuration,
-    status,
-    quizReady,
-    timerStarted,
-  } = useSelector((state) => state.currentQuizSession);
-
-  // --- SOCKET HANDLERS ---
-  const handleWsMessage = useCallback((data) => {
-    switch (data.type) {
-      case 'participant_joined':
-        dispatch(addParticipant({ user_id: data.user_id, name: data.name }));
-        // Only show toast if we are in the lobby (not playing yet)
-        if (status !== 'active') toast.info(`${data.name} joined!`);
-        break;
-
-      case 'quiz_started':
-        dispatch(setQuizReady(true));
-        if (isHost === false) {
-          toast.success("The quiz is now available! Click 'Start Quiz' when you're ready.");
-        } else {
-          navigate(`/leaderboard/${session_id}`);
-        }
-        break;
-
-      case 'quiz_ended':
-        dispatch(setStatus('ended'));
-        toast.warning("The Host has ended the quiz.");
-        navigate(`/leaderboard/${session_id}`);
-        break;
-
-      case 'leaderboard_update':
-        console.log("Leaderboard update received:", data);
-        dispatch(updateParticipantScore({
-          user_id: data.user_id,
-          name: data.name,
-          total_score: data.total_score,
-        }));
-        break;
-
-      case 'participant_completed':
-        console.log("Participant completed:", data);
-        dispatch(updateParticipantStatus({
-          user_id: data.user_id,
-          status: 'completed',
-        }));
-        break;
-
-      default:
-        break;
-    }
-  }, [dispatch, session_id, navigate, isHost, status]);
-
-  // Initialize WebSocket
-  useWebSocket(session_id, {
-    'participant_joined': handleWsMessage,
-    'quiz_started': handleWsMessage,
-    'quiz_ended': handleWsMessage,
-    'leaderboard_update': handleWsMessage,
-    'participant_completed': handleWsMessage,
-  });
-
-  // --- TIMER LOGIC ---
-  const handleTimeExpire = useCallback(async () => {
-    toast.warning("Time's up! Your quiz has been submitted.");
-    // Auto-complete the quiz when time expires
-    try {
-      await quizApi.completeQuiz(session_id);
-    } catch (err) {
-      console.error("Failed to complete quiz on timeout", err);
-    }
-    navigate(`/leaderboard/${session_id}`);
-  }, [session_id, navigate]);
-
-  const { timeLeft, isRunning, startTimer, formatTime } = useTimer(serverDuration, handleTimeExpire);
-
-  
-
-  const setInitialParticipants = useCallback((list) => {
-    dispatch(setParticipants(list || []));
-  }, [dispatch]);
-
-  const beginQuiz = useCallback(() => {
-    dispatch(setTimerStarted(true));
-    dispatch(setStatus('active'));
-    // Pass serverDuration directly to ensure timer starts with correct value
-    startTimer(serverDuration);
-    navigate(`/quiz/${session_id}`);
-  }, [dispatch, startTimer, navigate, session_id, serverDuration]);
-
-  const startQuiz = async () => {
+  // 1. Start Quiz Session by host
+  const startQuizSession = async (session_id) => {
     try {
       dispatch(setLoading(true));
-      await quizApi.startQuiz(session_id);
-      // Navigation handled by 'quiz_started' socket event
+      const res = await quizApi.startQuiz(session_id);
     } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || "Failed to start quiz");
+      console.error("Failed to start quiz session:", err);
     } finally {
       dispatch(setLoading(false));
     }
   };
 
-  const loadGame = async () => {
+  const startQuizForParticipant = async (session_id) => {
     try {
       dispatch(setLoading(true));
-
-      // Check Status (in case of refresh)
-      const statusRes = await quizApi.getStatus(session_id);
-      const { attempted_indices, current_score } = statusRes.data;
-
-      // Get questions
-      const paperRes = await quizApi.getPaper(session_id);
-      const { questions} = paperRes.data;
-
-      // Determine start index
-      let nextIndex = 0;
-      if (attempted_indices?.length > 0) {
-        nextIndex = Math.max(...attempted_indices) + 1;
-      }
-
-      if (nextIndex >= questions.length) {
-        navigate(`/leaderboard/${session_id}`);
-      } else {
-        dispatch(setQuizData({
-          questions,
-          duration: duration || 60,
-          currentScore: current_score || 0,
-          currentIndex: nextIndex,
-        }));
-      }
+      await quizApi.startQuizForParticipant(session_id);
+      dispatch(setPlayerStatus("active"));
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to load quiz.");
+      console.error("Failed to start quiz for participant:", err);
     } finally {
       dispatch(setLoading(false));
     }
   };
 
-  // 3. STUDENT: Submit Answer
-  const submitAnswer = async (selectedOption) => {
-    if (!currentQuestion) return;
-
+  const getPaper = async (session_id) => {
     try {
-      const res = await quizApi.submitAnswer({
-        session_id: session_id,
-        question_index: currentIndex,
-        selected_option: selectedOption,
-      });
-
-      if (res.data.points > 0) {
-        dispatch(incrementScore(res.data.points));
-      }
+      dispatch(setLoading(true));
+      const res = await quizApi.getPaper(session_id);
+      dispatch(setQuestions(res.data.questions || []));
+      const duration = res.data.duration || 0;
+      const start_time = new Date(res.data.start_time);
+      const end_time = new Date(start_time.getTime() + duration * 60000);
+      const now = new Date();
+      const timeLeft = Math.max(0, Math.floor((end_time - now) / 1000));
+      dispatch(setTimeLeft(timeLeft));
     } catch (err) {
-      console.error("Submit failed", err);
+      console.error("Failed to fetch quiz paper:", err);
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+  const submitAnswer = async (data) => {
+    try {
+      dispatch(setLoading(true));
+      const res = await quizApi.submitAnswer(data);
+      const question_index = data.question_index;
+      const answer = data.answer;
+      dispatch(addAttemptedQuestion({ question_index, answer }));
+      return res.data;
+    } catch (err) {
+      console.error("Failed to submit answer:", err);
+      return null;
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
-  // 4. HOST: End Quiz
-  const endQuiz = async () => {
+  const getStatus = async (session_id) => {
     try {
-      await quizApi.endQuiz(session_id);
+      dispatch(setLoading(true));
+      const res = await quizApi.getStatus(session_id);
+
+      const attemptedQuestions = res.data.attempted_questions || [];
+      const maxIndex = attemptedQuestions.reduce(
+        (max, q) => Math.max(max, q.question_index),
+        -1
+      );
+      dispatch(setCurrentQuestionIndex(maxIndex + 1));
+
+      dispatch(setAttemptedQuestions(res.data.attempted_questions || []));
     } catch (err) {
-      toast.error("Failed to end quiz",err);
+      console.error("Failed to fetch quiz status:", err);
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
-  // 5. STUDENT: Mark Quiz as Completed
-  const completeQuiz = async () => {
-    try {
-      await quizApi.completeQuiz(session_id);
-      toast.success("Quiz completed!");
-    } catch (err) {
-      console.error("Failed to complete quiz", err);
-    }
-  };
-
-  // 6. Get Leaderboard
-  const getLeaderboard = async () => {
+  const getLeaderboard = async (session_id) => {
     try {
       dispatch(setLoading(true));
       const res = await quizApi.getLeaderboard(session_id);
-      dispatch(setParticipants(res.data.leaderboard || []));
+        dispatch(setLeaderBoard(res.data || []));
+      return res.data;
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to load leaderboard");
+      console.error("Failed to fetch leaderboard:", err);
+      return null;
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  const markCompleted = async (session_id) => {
+    try {
+      dispatch(setLoading(true));
+      await quizApi.completeQuiz(session_id);
+      dispatch(setPlayerStatus("completed"));
+    } catch (err) {
+      console.error("Failed to mark quiz as completed:", err);
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  const endQuizSession = async (session_id) => {
+    try {
+      dispatch(setLoading(true));
+      await quizApi.endQuiz(session_id);
+    } catch (err) {
+      console.error("Failed to end quiz session:", err);
     } finally {
       dispatch(setLoading(false));
     }
   };
 
   return {
-    // State
-    loading,
-    participants,
-    currentQuestion,
-    currentIndex,
-    totalQuestions,
-    score,
-    timeLeft: formatTime(timeLeft),
-    rawTimeLeft: timeLeft,
-    isTimerRunning: isRunning,
-    quizReady,
-    timerStarted,
-    isHost,
-
-    // Actions
-    startQuiz,
-    beginQuiz,
-    loadGame,
+    quizSession,
+    startQuizSession,
+    startQuizForParticipant,
+    getPaper,
     submitAnswer,
-    endQuiz,
-    completeQuiz,
+    getStatus,
     getLeaderboard,
-    setInitialParticipants,
+    markCompleted,
+    endQuizSession,
   };
 };

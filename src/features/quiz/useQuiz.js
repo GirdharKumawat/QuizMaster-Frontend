@@ -4,7 +4,7 @@ import {
     setError, 
     setCreatedQuizzes, 
     addCreatedQuiz, 
-    setEnrolledQuizzes, 
+    setEnrolledQuizzes,  
     addEnrolledQuiz, 
     setCanTry 
 } from "./quizSlice";
