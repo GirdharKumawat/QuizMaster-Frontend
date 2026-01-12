@@ -15,38 +15,26 @@ export const useQuiz = () => {
     const quizState = useSelector((state) => state.quiz);
     const dispatch = useDispatch();
 
-    // 1. Fetch Created Quizzes (Dashboard)
-    const getCreatedQuizzes = async () => {
+
+    //  functions to get, create, join quizzes
+    const getAllQuizzes = async () => {
         try {
             dispatch(setLoading(true));
-            const res = await quizApi.getDashboard(); 
-            dispatch(setCreatedQuizzes(res.data));
+            const res = await quizApi.listQuizzes();
+            const hosted_quizzes = res.data.hosted_quizzes;
+            const enrolled_quizzes = res.data.enrolled_quizzes;
+            dispatch(setCreatedQuizzes(hosted_quizzes || []));
+            dispatch(setEnrolledQuizzes(enrolled_quizzes || []));
             dispatch(setCanTry(false));   
         } catch (err) {
-            const errorMsg = err.response?.data?.message || "Failed to fetch created quizzes.";
+            const errorMsg = err.response?.data?.message || "Failed to fetch quizzes.";
             dispatch(setError(errorMsg));
             toast.error(errorMsg);
         } finally {
             dispatch(setLoading(false));
         }
-    };
 
-    // 2. Fetch Enrolled Quizzes
-    const getEnrolledQuizzes = async () => {
-        try {
-            dispatch(setLoading(true));
-            const res = await quizApi.getEnrolled();
-            dispatch(setEnrolledQuizzes(res.data.quizzes || res.data));
-            dispatch(setCanTry(false));   
-        } catch (err) {
-            const errorMsg = err.response?.data?.message || "Failed to fetch enrolled quizzes.";
-            dispatch(setError(errorMsg));
-            toast.error(errorMsg);
-        } finally {
-            dispatch(setLoading(false));
-        }
     };
-
     // 3. Create a New Quiz
     const createQuiz = async (quizData) => {
         try {
@@ -70,21 +58,15 @@ export const useQuiz = () => {
             dispatch(setLoading(false));
         }
     };
-
-    // 4. Join a Quiz
-    const joinQuiz = async (session_id) => {
+ 
+    const joinQuiz = async (sessionId) => {
         try {
             dispatch(setLoading(true));
-            const res = await quizApi.join({ session_id: session_id });
+            const res = await quizApi.join(sessionId);
             const joinedQuiz = res.data;
-
-            // Optimization: Update Redux immediately
-            // (Assuming backend returns the quiz details on join)
             if (joinedQuiz) {
-                // If backend structure differs, you might need to map it before pushing
                 dispatch(addEnrolledQuiz(joinedQuiz));
             }
-
             toast.success("Joined quiz successfully!");
             return joinedQuiz;
         } catch (err) {
@@ -97,13 +79,12 @@ export const useQuiz = () => {
         }
     };
 
-   
 
     return {
-        quizState,
-        getCreatedQuizzes,
-        getEnrolledQuizzes,
+        quizState,  
+        getAllQuizzes,
         createQuiz,
         joinQuiz,
+        
     };
 };

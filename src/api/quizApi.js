@@ -1,43 +1,22 @@
 import axiosAPI from "./axios";
 
 export const quizApi = {
-    // --- LOBBY & MANAGEMENT ---
-    // URL: api/quizzes/create/
-    create: (data) => axiosAPI.post("quizzes/create/", data),
-    
-    // URL: api/quizzes/join/
-    join: (data) => axiosAPI.post("quizzes/join/", data),
-    
-    // URL: api/quizzes/dashboard/
-    getDashboard: () => axiosAPI.get("quizzes/dashboard/"),
-    
-    // URL: api/quizzes/enrolled/
-    getEnrolled: () => axiosAPI.get("quizzes/enrolled/"),
+  create: (data) => axiosAPI.post("quizzes/", data),
+  get: (sessionId) => axiosAPI.get(`quizzes/${sessionId}/`),
 
-    // --- GAMEPLAY (Host) ---
-    // URL: api/quizzes/start/
-    startQuiz: (sessionId) => axiosAPI.post("quizzes/start/", { session_id: sessionId }),
-    
-    // URL: api/quizzes/end/
-    endQuiz: (sessionId) => axiosAPI.post("quizzes/end/", { session_id: sessionId }),
-    
-    // URL: api/quizzes/leaderboard/<id>/
-    getLeaderboard: (sessionId) => axiosAPI.get(`quizzes/leaderboard/${sessionId}/`),
+  join: (sessionId) => axiosAPI.post(`quizzes/${sessionId}/join/`),
+  listQuizzes: () => axiosAPI.get("quizzes/"),
 
-    // --- GAMEPLAY (Student) ---
-
-    startQuizForParticipant: (sessionId) => axiosAPI.post("quizzes/start-participant/", { session_id: sessionId }),
-
-
-    // URL: api/quizzes/paper/<id>/
-    getPaper: (sessionId) => axiosAPI.get(`quizzes/paper/${sessionId}/`),
-    
-    // URL: api/quizzes/submit/
-    submitAnswer: (data) => axiosAPI.post("quizzes/submit/", data),
-    
-    // URL: api/quizzes/status/<id>/
-    getStatus: (sessionId) => axiosAPI.get(`quizzes/status/${sessionId}/`),
-
-    // URL: api/quizzes/complete/
-    completeQuiz: (sessionId) => axiosAPI.post("quizzes/complete/", { session_id: sessionId }),
-};
+  startQuiz: (sessionId) => axiosAPI.post(`quizzes/${sessionId}/start/`),
+  endQuiz: (sessionId) => axiosAPI.post(`quizzes/${sessionId}/end/`),
+  
+  startQuizForParticipant: (sessionId) => axiosAPI.post(`quizzes/${sessionId}/begin/`),
+  getQuestions: (sessionId) => axiosAPI.get(`quizzes/${sessionId}/questions/`),
+  
+  submitAnswer: (sessionId, questionIndex, selectedOption) =>
+    axiosAPI.post(`quizzes/${sessionId}/submit/`, {
+      question_index: questionIndex,
+      selected_option: selectedOption,
+    }),
+  completeQuiz: (sessionId) => axiosAPI.post(`quizzes/${sessionId}/complete/`),
+}; 

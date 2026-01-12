@@ -7,7 +7,7 @@ function App() {
   const { fetchUser } = useAuth();
 
   useEffect(() => {
-    fetchUser();
+  fetchUser();
   }, []);
 
   return (

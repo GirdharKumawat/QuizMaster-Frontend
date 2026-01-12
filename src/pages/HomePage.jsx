@@ -9,15 +9,14 @@ const HomePage = () => {
   const navigate = useNavigate();
   
   // Custom Hooks - Logic Layer
-  const { quizState, getCreatedQuizzes, getEnrolledQuizzes } = useQuiz();
+  const { quizState, getAllQuizzes } = useQuiz();
   const { authState, logoutUser } = useAuth();
 
   const { username } = authState;
   const { createdQuizzes, enrolledQuizzes } = quizState;
 
   useEffect(() => {
-    getCreatedQuizzes();
-    getEnrolledQuizzes();
+    getAllQuizzes();
     
   }, []); 
 
@@ -70,11 +69,15 @@ const HomePage = () => {
                         <h4 className="font-semibold text-gray-800 group-hover:text-purple-700 transition-colors">
                             {quiz.title || "Untitled Quiz"}
                         </h4>
-                        <p className="text-sm text-gray-500 mt-1">
-                            {quiz.description || `${quiz.question_count} questions`}
-                        </p>
+                      {/* descripation status  */}
+                      <p className="text-sm text-gray-500 mt-1">
+                        {quiz.description || "No description"} • {quiz.question_count || 0} Questions
+                      </p>
                     </div>
-                    {/* Optional: Add status badge here */}
+                    {/* Add status badge here */}
+                    <div className="text-sm font-medium px-2 py-1 rounded-full bg-purple-100 text-purple-700">
+                      {quiz.status || "Created"}
+                    </div>
                   </div>
                 </button>
               ))}
@@ -106,8 +109,12 @@ const HomePage = () => {
                         {quiz.title || "Untitled Quiz"}
                     </h4>
                     <p className="text-sm text-gray-500 mt-1">
-                        {quiz.description || 0}{quiz.question_count || 0} Questions • {quiz.status || "Joined"}
+                        {quiz.description || 0}{quiz.question_count || 0} Questions 
                     </p>
+                    {/* status */}
+                    <div className="text-sm font-medium px-2 py-1 rounded-full bg-teal-100 text-teal-700 mt-2 inline-block">
+                      {quiz.status || "Enrolled"}
+                    </div>
                 </button>
               ))}
             </div>

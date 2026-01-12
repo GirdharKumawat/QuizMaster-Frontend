@@ -1,74 +1,139 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Clock, Trophy, CheckCircle, Play } from "lucide-react";
 import { Card, Button } from "../components/ui";
 import { useQuizSession } from "../features/quiz/useQuizSession";
-import { useQuiz } from "../features/quiz/useQuiz"; 
+import { useQuizWebSocket } from "../hooks/useQuizWebSocket";
+import { useAuth } from "../features/auth/useAuth";
+import { setCurrentQuestionIndex } from "../features/quiz/quizSessionSlice";
+
+import { useDispatch } from "react-redux";
 
 function QuizPage() {
   const { session_id } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { authState } = useAuth();  
+  const { id } = authState;
 
-
-  const { quizState } = useQuiz();
-  const createdQuizzes = quizState.createdQuizzes || [];
-  const enrolledQuizzes = quizState.enrolledQuizzes || [];
-  
-  
-  const currentQuiz = [...createdQuizzes, ...enrolledQuizzes].find(q => q.session_id === session_id || q._id === session_id) || {};
   const {
-    loading,
-    loadGame,
-    currentQuestion,
-    currentIndex,
-    totalQuestions,
-    score,
-    timeLeft,
-    rawTimeLeft,
-    timerStarted,
+    quizSession,
+    getQuestions,
     submitAnswer,
-    completeQuiz,
-    beginQuiz,
-    setInitialParticipants,
-  } = useQuizSession(session_id);
+    markCompleted,
+    startQuizForParticipant,
+    getQuizDetails,
+  } = useQuizSession();
 
+  const {
+    status,
+    title,
+    playerStatus,
+    questions,
+    currentQuestionIndex,
+    participants,
+    duration,
+    isInitialState,
+  } = quizSession;
+
+  useQuizWebSocket(session_id);
+  const [timeLeft, setTimeLeft] = useState(
+    participants.find((p) => p.user_id === id)?.timeLeft || duration * 60
+  );
   const [selectedOption, setSelectedOption] = useState("");
+  const [timerStarted, setTimerStarted] = useState(false);
+  const [score, setScore] = useState(0);
 
-  
+  // Derived values
+  const totalQuestions = questions.length;
+  const currentQuestion = questions[currentQuestionIndex] || null;
+  const progress = totalQuestions
+    ? (currentQuestionIndex / totalQuestions) * 100
+    : 0;
+  const isLast = currentQuestionIndex === totalQuestions - 1;
+
   useEffect(() => {
-    loadGame();
-    
-    
-    
-    if (currentQuiz.participants && currentQuiz.participants.length > 0) {
-        
-        const normalized = currentQuiz.participants.map(p => ({
-            user_id: p.user_id || p.id,
-            name: p.name || p.username || "Unknown",
-            score: p.score || 0
-        }));
-        setInitialParticipants(normalized);
+    if (!id) {
+      return; // Don't fetch until id is available
     }
     
-  }, []);
+    if (isInitialState) {
+      
+     
+      getQuizDetails(session_id, id);
+    }
+    getQuestions(session_id);
+  }, [isInitialState, session_id, id]);
+
+  // Timer countdown
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => Math.max(prev - 1, 0));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timerStarted, timeLeft]);
+
+  // Handle time up or quiz ended
+  useEffect(() => {
+    // check if is refresh caused by quiz end
+      if(!totalQuestions) {
+        return;
+      }
+
+    if (timeLeft <= 0 ) {
+      console.log("Time's up! Completing quiz...");
+      handleQuizComplete();
+    }
+  }, [timeLeft, timerStarted]);
+
+  // Navigate to leaderboard when quiz ends via WebSocket
+  useEffect(() => {
+    if (status === "completed") {
+      navigate(`/leaderboard/${session_id}`);
+    }
+  }, [status, session_id]);
+
+  const beginQuiz = async () => {
+    await startQuizForParticipant(session_id);
+    setTimerStarted(true);
+  };
+
+  const handleQuizComplete = async () => {
+    console.log("Marking quiz as completed...");
+    await markCompleted(session_id);
+
+    navigate(`/leaderboard/${session_id}`);
+  };
 
   const handleNext = async () => {
     if (!selectedOption) return;
 
-    await submitAnswer(selectedOption);
+    await submitAnswer({
+      session_id: session_id,
+      question_index: currentQuestionIndex,
+      answer: selectedOption,
+    });
+
     setSelectedOption("");
 
     // If this was the last question, mark quiz as completed
     if (isLast) {
-      await completeQuiz();
+      await handleQuizComplete();
+    } else {
+      dispatch(setCurrentQuestionIndex(currentQuestionIndex + 1));
     }
-
-    loadGame();
   };
 
-  const progress = totalQuestions ? (currentIndex / totalQuestions) * 100 : 0;
-  const isLast = currentIndex === totalQuestions - 1;
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
 
-  if (loading && !currentQuestion) {
+  if (!currentQuestion) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-xl font-semibold text-purple-600 animate-pulse">
@@ -79,37 +144,40 @@ function QuizPage() {
   }
 
   // Show "Start Quiz" screen when quiz is ready but user hasn't started yet
-  if (!timerStarted && currentQuestion) {
+  if (currentQuestion && playerStatus === "lobby") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-purple-50 p-4">
         <Card className="max-w-lg w-full p-8 text-center space-y-6 shadow-xl border-0">
           <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
             <Play size={36} className="text-white ml-1" />
           </div>
-          
+
           <div className="space-y-2">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
               Ready to Start?
             </h1>
-            <p className="text-gray-500">
-              {currentQuiz.title || "Quiz"}
-            </p>
+            <p className="text-gray-500">{title || "Quiz"}</p>
           </div>
 
           <div className="bg-gray-50 rounded-xl p-4 space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Total Questions</span>
-              <span className="font-semibold text-gray-800">{totalQuestions}</span>
+              <span className="font-semibold text-gray-800">
+                {totalQuestions}
+              </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Time Limit</span>
-              <span className="font-semibold text-gray-800">{timeLeft}</span>
+              <span className="font-semibold text-gray-800">
+                {duration} min
+              </span>
             </div>
           </div>
 
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
             <p>
-              <strong>Note:</strong> Once you start, the timer will begin counting down. Make sure you're ready!
+              <strong>Note:</strong> Once you start, the timer will begin
+              counting down. Make sure you're ready!
             </p>
           </div>
 
@@ -131,10 +199,23 @@ function QuizPage() {
         {/* Top Bar (HUD) */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-wrap gap-3">
-            <Card className={`px-5 py-3 flex items-center gap-3 ${rawTimeLeft <= 60 ? 'border-red-300 bg-red-50' : 'border-purple-100'}`}>
-              <Clock size={20} className={rawTimeLeft <= 60 ? 'text-red-600' : 'text-purple-600'} />
-              <span className={`font-mono text-xl font-bold ${rawTimeLeft <= 60 ? 'text-red-700' : 'text-gray-700'}`}>
-                {timeLeft}
+            <Card
+              className={`px-5 py-3 flex items-center gap-3 ${
+                timeLeft <= 60
+                  ? "border-red-300 bg-red-50"
+                  : "border-purple-100"
+              }`}
+            >
+              <Clock
+                size={20}
+                className={timeLeft <= 60 ? "text-red-600" : "text-purple-600"}
+              />
+              <span
+                className={`font-mono text-xl font-bold ${
+                  timeLeft <= 60 ? "text-red-700" : "text-gray-700"
+                }`}
+              >
+                {formatTime(timeLeft)}
               </span>
             </Card>
 
@@ -144,7 +225,7 @@ function QuizPage() {
             </Card>
 
             <Card className="px-4 py-2 flex items-center gap-2 border-gray-100 text-sm text-gray-600">
-              Question {currentIndex + 1} / {totalQuestions}
+              Question {currentQuestionIndex + 1} / {totalQuestions}
             </Card>
           </div>
 
@@ -159,70 +240,70 @@ function QuizPage() {
 
         {/* Question Area */}
         <Card className="p-6 md:p-8 space-y-8 shadow-md border-0">
-            {currentQuestion ? (
-              <>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start">
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-800 leading-snug">
-                      {currentQuestion.question}
-                    </h2>
-                  </div>
+          {currentQuestion ? (
+            <>
+              <div className="space-y-4">
+                <div className="flex justify-between items-start">
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-800 leading-snug">
+                    {currentQuestion.question}
+                  </h2>
                 </div>
+              </div>
 
-                <div className="grid gap-3">
-                  {(currentQuestion.options || []).map((opt, idx) => {
-                    const isSelected = selectedOption === opt;
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedOption(opt)}
-                        className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 group ${
+              <div className="grid gap-3">
+                {(currentQuestion.options || []).map((opt, idx) => {
+                  const isSelected = selectedOption === opt;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedOption(opt)}
+                      className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 group ${
+                        isSelected
+                          ? "border-purple-500 bg-purple-50 shadow-md transform scale-[1.01]"
+                          : "border-gray-100 hover:border-purple-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      <div
+                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
                           isSelected
-                            ? "border-purple-500 bg-purple-50 shadow-md transform scale-[1.01]"
-                            : "border-gray-100 hover:border-purple-200 hover:bg-gray-50"
+                            ? "border-purple-500 bg-purple-500 text-white"
+                            : "border-gray-300 group-hover:border-purple-300"
                         }`}
                       >
-                        <div
-                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                            isSelected
-                              ? "border-purple-500 bg-purple-500 text-white"
-                              : "border-gray-300 group-hover:border-purple-300"
-                          }`}
-                        >
-                          {isSelected && <CheckCircle size={14} />}
-                        </div>
-                        <span
-                          className={`font-medium ${
-                            isSelected ? "text-purple-900" : "text-gray-700"
-                          }`}
-                        >
-                          {opt}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="pt-6 border-t border-gray-100 flex justify-end">
-                  <Button
-                    onClick={handleNext}
-                    disabled={!selectedOption}
-                    className={`px-8 py-3 text-lg font-semibold shadow-lg transition-all ${
-                      !selectedOption
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:-translate-y-1 shadow-purple-200"
-                    }`}
-                  >
-                    {isLast ? "Finish Quiz" : "Next Question"}
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-20 text-gray-400">
-                <p>No question data available.</p>
+                        {isSelected && <CheckCircle size={14} />}
+                      </div>
+                      <span
+                        className={`font-medium ${
+                          isSelected ? "text-purple-900" : "text-gray-700"
+                        }`}
+                      >
+                        {opt}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-            )}
-          </Card>
+
+              <div className="pt-6 border-t border-gray-100 flex justify-end">
+                <Button
+                  onClick={handleNext}
+                  disabled={!selectedOption}
+                  className={`px-8 py-3 text-lg font-semibold shadow-lg transition-all ${
+                    !selectedOption
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:-translate-y-1 shadow-purple-200"
+                  }`}
+                >
+                  {isLast ? "Finish Quiz" : "Next Question"}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-20 text-gray-400">
+              <p>No question data available.</p>
+            </div>
+          )}
+        </Card>
       </div>
     </div>
   );

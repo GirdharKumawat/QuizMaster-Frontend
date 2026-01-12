@@ -4,16 +4,16 @@ import { Card, Button, Input } from '../components/ui';
 import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '../features/quiz/useQuiz';
 
-function RoomJoinPage() {
+function JoinRoomPage() {
   const navigate = useNavigate();
-  const { joinQuiz } = useQuiz(); // No need for getEnrolledQuizzes here
+  const { joinQuiz } = useQuiz();  
   
   const [roomCode, setRoomCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const normalized = roomCode.trim();
-  const isValidCode = normalized.length > 0; // Simple validation
+  const isValidCode = normalized.length > 0; 
 
   const handleJoin = async (e) => {
     e?.preventDefault();
@@ -120,4 +120,4 @@ function RoomJoinPage() {
   );
 }
 
-export default RoomJoinPage;
+export default JoinRoomPage;

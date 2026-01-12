@@ -37,9 +37,8 @@ const authSlice = createSlice({
     },
 
     setUser(state, action) {
-      const { _id, id, username, email } = action.payload;
-      // robust check for both id formats
-      if (_id || id) state.id = _id || id;
+      const { _id,username, email } = action.payload;
+      if (_id) state.id = _id  ;
       if (username) state.username = username;
       if (email) state.email = email;
     },

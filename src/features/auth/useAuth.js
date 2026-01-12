@@ -91,8 +91,7 @@ export function useAuth() {
       dispatch(setLoading(true));
       const res = await authApi.getProfile();
       dispatch(setLoading(false));
-  
-      dispatch(setUser(res.data.data || res.data)); 
+      dispatch(setUser( res.data)); 
       dispatch(setIsAuthenticated(true));
     } catch (error) {
       dispatch(setLoading(false));

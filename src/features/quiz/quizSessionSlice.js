@@ -1,73 +1,125 @@
-import {createSlice} from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    loading: false,
-    
-    leaderboard: [],
 
+  session_id: null,
+  status: "waiting", // 'waiting' | 'active' | 'completed'
+  participants: [],
+  
+  // Quiz Session State for participants
+  quiz_id: null,
+  title: "",
+  description: "",
+  duration: 0, // in minutes
+  host_id: null,
+  question_count: 0,
+  
+  questions: [],
+  currentQuestionIndex: 0,
+  playerStatus: "lobby", // 'lobby' | 'active' | 'completed'
+  timeLeft: 0,
 
-    // Quiz Session State for participants
-    currentQuestionIndex: 0,
-    questions: [],
-    timeLeft: 0,
-    playerStatus: 'not_started', // 'lobby' | 'active' | 'completed'
-    attempted_questions: [],
-
+  isInitialState: true,
 };
 const quizSessionSlice = createSlice({
-    name: 'quizSession',
-    initialState,
-    reducers: {
-        setLoading(state, action) {
-            state.loading = action.payload;
-        },
-        setQuestions(state, action) {
-            state.questions = action.payload;
-        },
-        setCurrentQuestionIndex(state, action) {
-            state.currentQuestionIndex = action.payload;
-        },
-        setTimeLeft(state, action) {
-            state.timeLeft = action.payload;
-        },
-        setPlayerStatus(state, action) {
-            state.playerStatus = action.payload;
-        },
-        setAttemptedQuestions(state, action) {
-            state.attempted_questions = action.payload;
-        },
-        addAttemptedQuestion(state, action) {
-            state.attempted_questions.push(action.payload);
-        },
+  name: "quizSession",
+  initialState,
+  reducers: {
 
-        setLeaderBoard(state, action) {
-            state.leaderboard = action.payload;
-        },
-        updateLeaderBoard(state, action) {
-            const updatedEntry = action.payload;
-            const index = state.leaderboard.findIndex(entry => entry.participant_id === updatedEntry.participant_id);
-            if (index !== -1) {
-                state.leaderboard[index] = updatedEntry;
-            }
-        },
-        resetQuizSession(state) {
-            state.currentQuestionIndex = 0;
-            state.questions = [];
-            state.timeLeft = 0;
-            state.playerStatus = 'not_started';
-            state.attempted_questions = [];
-        }
+    
 
-    }
+    //   status
+    setStatus(state, action) {
+      state.status = action.payload;
+    },
+
+    // participant management
+    setParticipants(state, action) {
+      state.participants = action.payload;
+    },
+
+    addParticipant(state, action) {
+      const { user_id, name, score, status, start_time } = action.payload;
+      const exists = state.participants.some((p) => p.user_id === user_id);
+      if (!exists) {
+        state.participants.push({ user_id, name, score, status ,start_time });
+      }
+    },
+
+    updateParticipantScore(state, action) {
+      const { user_id, score } = action.payload;
+      const participant = state.participants.find((p) => p.user_id === user_id);
+      if (participant) {
+        participant.score = score;
+      }
+    },
+
+    updateParticipantStatus(state, action) {
+      const { user_id, status,start_time } = action.payload;
+      const participant = state.participants.find((p) => p.user_id === user_id);
+      if (participant) {
+        participant.status = status;
+        participant.start_time=start_time;
+      }
+    },
+
+    // metaData management
+    setQuizDetails(state, action) {
+      const { quiz_id, title, description, duration,host_id,question_count } = action.payload;
+      state.quiz_id = quiz_id;
+        state.title = title;
+        state.description = description;
+        state.duration = duration;
+        state.host_id=host_id;
+        state.question_count=question_count;
+
+        state.isInitialState = false;
+    },
+
+    // quiz questions management
+    setQuestions(state, action) {
+      state.questions = action.payload;
+    },
+    setCurrentQuestionIndex(state, action) {
+      state.currentQuestionIndex = action.payload;
+    },
+    
+    setPlayerStatus(state, action) {
+      state.playerStatus = action.payload;
+    },
+
+    setTimeLeft(state, action) {
+      state.timeLeft = action.payload;
+    },
+
+    resetQuizSession(state) {
+      state.session_id = null;
+      state.status = "waiting";
+      state.participants = [];
+      state.quiz_id = null;
+      state.currentQuestionIndex = 0;
+      state.questions = [];
+      state.timeLeft = 0;
+      state.playerStatus = "lobby";
+      state.isInitialState = true;},
+  },
 });
 export const {
-    setLoading,
-    setQuestions,
-    setCurrentQuestionIndex,
-    setTimeLeft,
-    setPlayerStatus,
-    setAttemptedQuestions,
-    addAttemptedQuestion,
-    resetQuizSession
+
+  setStatus,
+
+  setParticipants,
+  addParticipant,
+  updateParticipantScore,
+  updateParticipantStatus,
+
+  setQuizDetails,
+
+  setQuestions,
+  setCurrentQuestionIndex,
+   
+  setPlayerStatus,
+  setTimeLeft,  
+  resetQuizSession,
 } = quizSessionSlice.actions;
 export default quizSessionSlice.reducer;
