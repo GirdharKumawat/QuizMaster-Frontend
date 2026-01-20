@@ -1,8 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading, setIsAuthenticated, setUser } from "./authSlice";
-import { toast } from "sonner";
 import { authApi } from "../../api/authApi";  
-
+import { toast } from "../../components/UI/ui";
 /**
  * Custom hook for authentication operations
  */
@@ -18,7 +17,6 @@ export function useAuth() {
       dispatch(setIsAuthenticated(isAuth));
       return isAuth;
     } catch (err) {
-      console.error("Auth check failed", err);
       dispatch(setIsAuthenticated(false));
       return false;
     } finally {
@@ -43,7 +41,11 @@ export function useAuth() {
     } catch (err) {
       dispatch(setLoading(false));
       dispatch(setIsAuthenticated(false));
-      toast.error(err.response?.data?.message || "Login failed");
+      console.error("Login failed", err);
+      toast.error({ 
+        title: "Login Failed", 
+        detail: err.response?.data?.message || "Please check your credentials" 
+      });
     }
   };
 
@@ -52,21 +54,22 @@ export function useAuth() {
       dispatch(setLoading(true));
       const res = await authApi.signup(credentials);
       const data = res.data;
-
-
-      dispatch(setLoading(false));
       dispatch(setIsAuthenticated(true));
       
       if (data) {
         dispatch(setUser(data));
       }
 
-      toast.success("Sign up successful");
+      toast.success({ title: "Success", detail: "Account created successfully" });
+      dispatch(setLoading(false));
       window.location.href = "/";
     } catch (err) {
       dispatch(setLoading(false));
       dispatch(setIsAuthenticated(false));
-      toast.error(err.response?.data?.error || "Sign up failed");
+      toast.error({ 
+        title: "Sign Up Failed", 
+        detail: err.response?.data?.error || "Unable to create account" 
+      });
     }
   };
 
@@ -75,12 +78,12 @@ export function useAuth() {
       await authApi.logout();
       dispatch(setIsAuthenticated(false));
       dispatch(setUser({ id: null, username: "", email: "" }));
-      toast.success("Logout successful");
+      toast.success({ title: "Success", detail: "Logged out successfully" });
       window.location.href = "/login";
     } catch (error) {
       dispatch(setIsAuthenticated(false));
       console.error("Logout failed", error);
-      toast.error("Logout failed");
+      toast.error({ title: "Error", detail: "Failed to logout" });
     } finally {
         dispatch(setLoading(false));
     }
@@ -88,6 +91,7 @@ export function useAuth() {
 
   const fetchUser = async () => {
     try {
+    
       dispatch(setLoading(true));
       const res = await authApi.getProfile();
       dispatch(setLoading(false));
@@ -95,7 +99,7 @@ export function useAuth() {
       dispatch(setIsAuthenticated(true));
     } catch (error) {
       dispatch(setLoading(false));
-  
+      dispatch(setIsAuthenticated(false));
       console.error("Fetch user failed", error);
     }
   };

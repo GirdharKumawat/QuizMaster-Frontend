@@ -1,7 +1,5 @@
 import SigninPage from '../pages/Signin'
 import SignupPage from '../pages/Signup'
-import JoinRoomPage from '../pages/JoinRoom'
-import CreateRoomPage from '../pages/CreateRoom'
 import WaitingRoomPage from '../pages/WaitingRoom'
 import QuizPage from '../pages/QuizPage'
 import LeaderBordPage from '../pages/LeaderBord'
@@ -15,8 +13,6 @@ function Routing() {
     <BrowserRouter>
                 <Routes>
                     <Route path='/' element={<ProtectedRoute><HomePage/></ProtectedRoute>} />
-                    <Route path='/join' element={<ProtectedRoute><JoinRoomPage /></ProtectedRoute>} />
-                    <Route path='/create' element={<ProtectedRoute><CreateRoomPage /></ProtectedRoute>} />
                     <Route path='/waiting/:session_id' element={<ProtectedRoute><WaitingRoomPage /></ProtectedRoute>} />
                     <Route path='/quiz/:session_id' element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
                     <Route path='/leaderboard/:session_id' element={<ProtectedRoute><LeaderBordPage /></ProtectedRoute>} />

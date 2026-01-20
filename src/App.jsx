@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Toaster } from 'sonner'; 
+import { Toaster } from './components/UI/Toast'; 
 import Routing from './routes/Routing'
 import { useAuth } from './features/auth/useAuth';
 
@@ -13,7 +13,7 @@ function App() {
   return (
     <>
      <Routing/>
-      <Toaster position="top-center" richColors />
+      <Toaster/>
     </>
   )
 }

@@ -19,4 +19,7 @@ export const quizApi = {
       selected_option: selectedOption,
     }),
   completeQuiz: (sessionId) => axiosAPI.post(`quizzes/${sessionId}/complete/`),
+  
+  // Get quiz review after completion
+  getReview: (sessionId) => axiosAPI.get(`quizzes/${sessionId}/review/`),
 }; 

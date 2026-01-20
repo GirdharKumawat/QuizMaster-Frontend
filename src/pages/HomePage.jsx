@@ -1,167 +1,174 @@
-import { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import {
+  DashboardWindow,
+  HostedQuizzesWindow,
+  EnrolledQuizzesWindow,
+  HistoryWindow,
+  CreateQuizWindow,
+  JoinQuizWindow,
+} from "../components/layout/Layout";
+import DesktopIcon from "../components/layout/DesktopIcon";
 import { useNavigate } from "react-router-dom";
-import { Plus, Users, LogOut } from "lucide-react";
-import { Card, Button } from "../components/ui";
+import {
+  Crown,
+  Zap,
+  PlusSquare,
+  DoorOpen,
+  Gamepad2,
+  Trophy,
+} from "lucide-react";
 import { useQuiz } from "../features/quiz/useQuiz";
+import { useQuizSession } from "../features/quiz/useQuizSession";
 import { useAuth } from "../features/auth/useAuth";
 
+ 
 const HomePage = () => {
   const navigate = useNavigate();
-  
-  // Custom Hooks - Logic Layer
-  const { quizState, getAllQuizzes } = useQuiz();
-  const { authState, logoutUser } = useAuth();
 
+  // Logic
+  const { quizState, getAllQuizzes } = useQuiz();
+  const {resetSession} = useQuizSession();
+  const { authState } = useAuth();
   const { username } = authState;
   const { createdQuizzes, enrolledQuizzes } = quizState;
 
-  useEffect(() => {
-    getAllQuizzes();
+  // Tabs - Show dashboard by default on large screens
+  const [activeWindow, setActiveWindow] = useState(() => {
+    return window.innerWidth >= 768 ? "home" : null;
+  });
     
-  }, []); 
+    
 
-  const handleLogout = () => {
-      logoutUser();
-      navigate("/login");};
+  useEffect(() => {
+    resetSession();
+    getAllQuizzes();
+  }, []);
+
+  // Filter Logic for Enrolled Quizzes as well as for created quizzes
+  const activeEnrolled = enrolledQuizzes?.filter(q => q.status !== "completed") || [];
+  const completedEnrolled = enrolledQuizzes?.filter(q => q.status === "completed") || [];
+  const activeCreated = createdQuizzes?.filter(q => q.status !== "completed") || [];
+  const completedCreated = createdQuizzes?.filter(q => q.status === "completed") || [];  
+
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-4xl mx-auto">
-        
-        {/* Header */}
-        <Card className="p-6 mb-8 bg-white shadow-sm">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                Welcome, {username || "Player"}!
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Ready for your next quiz challenge?
-              </p> 
-            </div>
-            <button
-              onClick={handleLogout}
-              className="text-gray-500 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50"
-              title="Logout"
-            >
-              <LogOut size={24} />
-            </button>
+    <div className="flex flex-col md:flex-row h-screen bg-[#F0F2F5] font-sans overflow-hidden selection:bg-[#FFD028] selection:text-black">
+      <div className="flex-1 overflow-y-auto p-6 md:p-10">
+        {/* --- HEADER --- */}
+        <div className="max-w-5xl  mb-4 text-center md:text-left">
+          <div className="inline-block bg-[#FFD028] border-2 border-black px-6 py-2 shadow-[4px_4px_0px_0px_#000] mb-4 -rotate-1">
+            <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">
+              Welcomee, {username}!
+            </h1>
           </div>
-        </Card>
+          <br />
 
-        {/* Section 1: Created Quizzes */}
-        <Card className="mb-8 p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <span className="w-2 h-8 bg-purple-600 rounded-full mr-2"></span>{}
-            Your Created Quizzes
-          </h3>
-          
-          {createdQuizzes && createdQuizzes.length > 0 ? (
-            <div className="grid md:grid-cols-2 gap-4">
-              {createdQuizzes.map((quiz) => (
-                <button
-                  key={quiz.quiz_id}
-                  onClick={() => navigate(`/waiting/${quiz.session_id}`)}
-                  className="p-4 border border-gray-100 rounded-xl bg-white hover:shadow-md hover:border-purple-200 cursor-pointer transition-all group text-left"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                        <h4 className="font-semibold text-gray-800 group-hover:text-purple-700 transition-colors">
-                            {quiz.title || "Untitled Quiz"}
-                        </h4>
-                      {/* descripation status  */}
-                      <p className="text-sm text-gray-500 mt-1">
-                        {quiz.description || "No description"} • {quiz.question_count || 0} Questions
-                      </p>
-                    </div>
-                    {/* Add status badge here */}
-                    <div className="text-sm font-medium px-2 py-1 rounded-full bg-purple-100 text-purple-700">
-                      {quiz.status || "Created"}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-          ) : (
-            <div className="text-gray-400 italic py-4 text-center border-2 border-dashed border-gray-100 rounded-xl">
-              You haven't created any quizzes yet.
-            </div>
-          )}
-        </Card>
-
-        {/* Section 2: Enrolled Quizzes */}
-        <Card className="mb-8 p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <span className="w-2 h-8 bg-teal-500 rounded-full mr-2"></span>{}
-            Enrolled Quizzes
-          </h3>
-
-          {enrolledQuizzes && enrolledQuizzes.length > 0 ? (
-            <div className="grid md:grid-cols-2 gap-4">
-              {enrolledQuizzes.map((quiz) => (
-                <button
-                  key={quiz.quiz_id}
-                  onClick={() => navigate(`/waiting/${quiz.session_id}`)}
-                  className="p-4 border border-gray-100 rounded-xl bg-white hover:shadow-md hover:border-teal-200 cursor-pointer transition-all group text-left"
-                >
-                   <h4 className="font-semibold text-gray-800 group-hover:text-teal-700 transition-colors">
-                        {quiz.title || "Untitled Quiz"}
-                    </h4>
-                    <p className="text-sm text-gray-500 mt-1">
-                        {quiz.description || 0}{quiz.question_count || 0} Questions 
-                    </p>
-                    {/* status */}
-                    <div className="text-sm font-medium px-2 py-1 rounded-full bg-teal-100 text-teal-700 mt-2 inline-block">
-                      {quiz.status || "Enrolled"}
-                    </div>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="text-gray-400 italic py-4 text-center border-2 border-dashed border-gray-100 rounded-xl">
-              You haven't joined any quizzes yet.
-            </div>
-          )}
-        </Card>
-
-        {/* Section 3: Actions */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Create Card */}
-          <Card
-            as="button"
-            className="p-8 text-center hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group border-0 ring-1 ring-gray-100"
-            onClick={() => navigate("/create")}
-            onKeyDown={(e) => e.key === 'Enter' && navigate("/create")}
-            role="button"
-            tabIndex={0}
-          >
-            <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl mx-auto mb-5 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
-              <Plus size={32} />
-            </div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Create Quiz Room</h2>
-            <p className="text-gray-500 mb-6 text-sm">Set up a new session and be the host</p>
-            <Button variant="primary" className="w-full">Create Now</Button>
-          </Card>
-
-          {/* Join Card */}
-          <Card
-            as="button"
-            className="p-8 text-center hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group border-0 ring-1 ring-gray-100"
-            onClick={() => navigate("/join")}
-            onKeyDown={(e) => e.key === 'Enter' && navigate("/join")}
-            role="button"
-            tabIndex={0}
-          >
-            <div className="w-16 h-16 bg-teal-100 text-teal-600 rounded-2xl mx-auto mb-5 flex items-center justify-center group-hover:bg-teal-500 group-hover:text-white transition-colors duration-300">
-              <Users size={32} />
-            </div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Join Quiz Room</h2>
-            <p className="text-gray-500 mb-6 text-sm">Enter a code to join a friend's game</p>
-            <Button variant="secondary" className="w-full">Join Game</Button>
-          </Card>
+          <p className="font-bold text-lg md:text-xl bg-white border-2 border-black p-3 shadow-[4px_4px_0px_0px_#000] inline-block max-w-2xl">
+            The ultimate arena for knowledge warriors.
+          </p>
         </div>
 
+        {/* --- DYNAMIC CONTENT --- */}
+        <div className="max-w-6xl min-h-[500px] flex flex-col md:flex-row gap-6">
+          {/* Desktop Icons Sidebar - Hidden on small screens when window is open */}
+          <div className={`shrink-0 ${activeWindow ? 'hidden md:block' : 'block'}`}>
+            <div className="grid grid-cols-3 md:grid-cols-2 gap-4 transition-all duration-300">
+              <DesktopIcon
+                label="Home"
+                icon={Gamepad2}
+                color="bg-[#FFD028]"
+                onClick={() => setActiveWindow("home")}
+              />
+              <DesktopIcon
+                label="Hosted"
+                icon={Crown}
+                color="bg-[#A78BFA]"
+                onClick={() => setActiveWindow("created")}
+              />
+              <DesktopIcon
+                label="Enrolled"
+                icon={Zap}
+                color="bg-[#22D3EE]"
+                onClick={() => setActiveWindow("enrolled")}
+              />
+              <DesktopIcon
+                label="History"
+                icon={Trophy}
+                color="bg-[#F472B6]"
+                onClick={() => setActiveWindow("history")}
+              />
+              <DesktopIcon
+                label="Create"
+                icon={PlusSquare}
+                color="bg-[#FB923C]"
+                onClick={() => setActiveWindow("create")}
+              />
+              <DesktopIcon
+                label="Join"
+                icon={DoorOpen}
+                color="bg-[#4ADE80]"
+                onClick={() => setActiveWindow("join")}
+              />
+            </div>
+          </div>
+
+          {/* Window Content Area */}
+          <div className="flex-1 min-w-0 md:ms-20">
+            {/* 1. HOME (Overview) */}
+            {activeWindow === "home" && (
+              <DashboardWindow
+                username={username}
+                createdQuizzes={createdQuizzes}
+                enrolledQuizzes={enrolledQuizzes}
+                onClose={() => setActiveWindow(null)}
+              />
+            )}
+
+            {/* 2. HOSTED QUIZZES */}
+            {activeWindow === "created" && (
+              <HostedQuizzesWindow
+                createdQuizzes={createdQuizzes}
+                onNavigate={navigate}
+                onCreateClick={() => setActiveWindow("create")}
+                onClose={() => setActiveWindow(null)}
+              />
+            )}
+
+            {/* 3. ENROLLED QUIZZES (Active) */}
+            {activeWindow === "enrolled" && (
+              <EnrolledQuizzesWindow
+                activeEnrolled={activeEnrolled}
+                onNavigate={navigate}
+                onClose={() => setActiveWindow(null)}
+              />
+            )}
+
+            {/* 4. HISTORY (Completed) */}
+            {activeWindow === "history" && (
+              <HistoryWindow 
+                completedEnrolled={completedEnrolled}
+                completedHosted={completedCreated}
+                onNavigate={navigate}
+                onClose={() => setActiveWindow(null)}
+              />
+            )}
+
+            {/* 5. CREATE QUIZ */}
+            {activeWindow === "create" && (
+              <CreateQuizWindow
+                onClose={() => setActiveWindow(null)}
+              />
+            )}
+
+            {/* 6. JOIN QUIZ */}
+            {activeWindow === "join" && (
+              <JoinQuizWindow
+                onClose={() => setActiveWindow(null)}
+              />
+            )}
+
+          </div>
+        </div>
       </div>
     </div>
   );

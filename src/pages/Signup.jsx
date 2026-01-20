@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { User, Mail, Lock } from "lucide-react";
-import { Button, Card, Input } from "../components/ui";
+import React, { useState } from "react";
+import { User, Mail, Lock, ArrowRight, CheckCircle } from "lucide-react";
+import { Button, Card, Input, StickyNote, Icons,toast } from "../components/UI/ui";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/useAuth";
+import { useEffect } from "react";
 const SignupPage = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -10,115 +11,163 @@ const SignupPage = () => {
     password: "",
     confirmPassword: "",
   });
+
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const {signupUser}= useAuth()
-  const handleSignup = () => {
+  const { signupUser,authState } = useAuth();
+  const {loading} = authState;
+  const [disabled, setDisabled] = useState(true);
+
+  useEffect(() => {
+    const { name, email, password, confirmPassword } = formData;
+    if (name.trim() && email.trim() && password.trim() && confirmPassword.trim()) {
+      setDisabled(false);
+    } else {
+      setDisabled(true);
+    }
+  }, [formData]);
+
+
+  const handleSignup = (e) => {
+    e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match", {
-                duration: 3000
-            });
-             return;
+      toast.error({ title: "Validation Error", detail: "Passwords do not match" });
+      return;
     }
 
-    signupUser({ username: formData.name, email: formData.email, password: formData.password });
-     
-    // Mock signup - replace with actual registration
-    // onSignup({ name: formData.name, email: formData.email });
+    signupUser({
+      username: formData.name,
+      email: formData.email,
+      password: formData.password,
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-teal-50 flex items-center justify-center p-4">
-      <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl">
-        <Card className="w-full max-w-md m-auto p-8">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-teal-400 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <User className="text-white" size={24} />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Join QuizMaster
-            </h1>
-            <p className="text-gray-600">
-              Create your free account to get started
-            </p>
-            <p className="text-gray-600">
-              Challenge your mind, track your progress, and compete with friends
-              — all in one place.
-            </p>
-          </div>
-        </Card>
-
-        <Card className=" m-auto w-full max-w-md p-8">
-          <div className="space-y-4 mb-6">
-        <Button variant="secondary" className="w-full mb-4" >
-        Continue with Google
-        </Button>
-        <div className="flex mx-auto w-full max-w-xs items-center">
-          <div className="h-px flex-grow bg-gray-300" />
-          <span className="mx-4 text-sm text-gray-500">or</span>
-          <div className="h-px flex-grow bg-gray-300" />
-         </div>
+    <div className="min-h-screen bg-[#F3F4F6] selection:bg-[#F472B6] selection:text-white flex items-center justify-center p-4 overflow-hidden">
+      <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 max-w-6xl w-full">
         
-            <Input
-              icon={User}
-              placeholder="Full Name"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-            />
-            <Input
-              icon={Mail}
-              type="email"
-              placeholder="Email Address"
-              value={formData.email} 
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-            />
-            <Input
-              icon={Lock}
-              type="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              showPasswordToggle={true}
-              passwordVisible={showPassword}
-              onTogglePassword={() => setShowPassword(!showPassword)}
-            />
-            <Input
-              icon={Lock}
-              type="password"
-              placeholder="Confirm Password"
-              value={formData.confirmPassword}
-              onChange={(e) =>
-                setFormData({ ...formData, confirmPassword: e.target.value })
-              }
-              showPasswordToggle={true}
-              passwordVisible={showConfirmPassword}
-              onTogglePassword={() =>
-                setShowConfirmPassword(!showConfirmPassword)
-              }
-            />
-          </div>
+        {/* Left Side: Registration Form Card */}
+        <div className="w-full max-w-md relative z-10">
+          <Card
+            title="Player Registration"
+            styleType="classic"
+            className="bg-white w-full"
+          >
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 bg-[#4ADE80] border-2 border-black rounded-full flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <User size={40} className="text-black" />
+              </div>
+            </div>
 
-          <Button onClick={handleSignup} className="w-full mb-4">
-            Create Account
-          </Button>
+            <form onSubmit={handleSignup} className="space-y-4">
+              <Input
+                label="Full Name"
+                icon={User}
+                styleType="classic"
+                placeholder="My Name is..."
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+              />
 
-          <div className="text-center">
-            <span className="text-gray-600">Already have an account? </span>
+              <Input
+                label="Email Address"
+                icon={Mail}
+                type="email"
+                styleType="classic"
+                placeholder="user@example.com"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+              />
+
+              <Input
+                label="Password"
+                icon={Lock}
+                type="password"
+                styleType="classic"
+                placeholder="Create password"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+               
+              />
+
+              <Input
+                label="Confirm Password"
+                icon={CheckCircle}
+                type="password"
+                styleType="classic"
+                placeholder="Confirm password"
+                value={formData.confirmPassword}
+                onChange={(e) =>
+                  setFormData({ ...formData, confirmPassword: e.target.value })
+                }
+              />
+
+              <Button
+                  isLoading={loading}
+                type="submit"
+                className="w-full mt-8"
+                styleType="classic"
+                variant="primary"
+                disabled={disabled || loading}
+              >
+                CREATE ACCOUNT
+              </Button>
+            </form>
+          </Card>
+        </div>
+
+        {/* Right Side: Sticky Note with Google Button */}
+        <div className="relative group w-full md:w-80 flex-shrink-0">
+          <StickyNote rotate="-rotate-3" className="bg-[#FFD93D] text-black">
+            <h3 className="text-2xl font-black uppercase mb-2 leading-none">
+              Join Quickly
+            </h3>
+            
+            <p className="text-sm font-medium mb-4 leading-tight opacity-90">
+                Skip the form and jump right into the action.
+            </p>
+
+            {/* --- GOOGLE STICKY BUTTON START --- */}
+            <button
+              className="
+                w-full bg-white text-black px-4 py-3 font-bold text-sm border-2 border-black 
+                shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] 
+                hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] 
+                transition-all flex items-center justify-center gap-3 mb-6
+              "
+              onClick={() => console.log("Google Signup Triggered")}
+            >
+              <Icons.Google className="w-5 h-5" /> 
+              <span>Continue with Google</span>
+            </button>
+            {/* --- GOOGLE STICKY BUTTON END --- */}
+
+            <div className="border-t-2 border-black border-dashed mb-4 opacity-20"></div>
+
+            <p className="text-sm font-bold mb-3 text-center">
+                Already a Player?
+            </p>
+
             <button
               onClick={() => navigate("/login")}
-              className="text-purple-600 font-medium hover:underline"
+              className="
+                bg-black text-white px-4 py-2 font-bold text-sm border-2 border-black 
+                shadow-[3px_3px_0px_0px_rgba(255,255,255,0.5)] 
+                hover:bg-gray-800 hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,0.2)] 
+                transition-all flex items-center justify-center gap-2 mx-auto w-full
+              "
             >
-              Sign In
+              Login Here <ArrowRight size={16} />
             </button>
-          </div>
-        </Card>
+          </StickyNote>
+
+        </div>
+
       </div>
     </div>
   );

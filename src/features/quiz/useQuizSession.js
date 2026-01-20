@@ -1,6 +1,6 @@
 import { quizApi } from "../../api/quizApi"; // Import APtoastI Layer
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "sonner";
+import { toast } from "../../components/UI/ui";
 
 import {
   setStatus,
@@ -74,20 +74,25 @@ export const useQuizSession = () => {
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Failed to get quiz.";
       console.error(err);
-      toast.error(errorMsg);
+      toast.error({ title: "Error", detail: errorMsg });
       return null;
     }
   };
 
   // 1. Start Quiz Session by host
   const startQuizSession = async (sessionId) => {
-    const toastId = toast.loading("Starting quiz...");
     try {
-      await quizApi.startQuiz(sessionId);
-      toast.success("Quiz started!", { id: toastId });
+      await toast.promise(
+        quizApi.startQuiz(sessionId),
+        {
+          loading: { title: "Starting Quiz", detail: "Please wait..." },
+          success: { title: "Success", detail: "Quiz started successfully!" },
+          error: { title: "Failed", detail: "Could not start quiz" }
+        }
+      );
+      dispatch(setStatus("active"));
     } catch (err) {
       console.error("Failed to start quiz session:", err);
-      toast.error("Failed to start quiz.", { id: toastId });
     }
   };
 
@@ -106,7 +111,9 @@ export const useQuizSession = () => {
       dispatch(setQuestions(res.data.questions || []));
       dispatch(setCurrentQuestionIndex(res.data.current_question_index || 0));
     } catch (err) {
+      const errorMsg = err.response?.data?.message || "Failed to fetch quiz questions.";
       console.error("Failed to fetch quiz paper:", err);
+      toast.error({ title: "Error", detail: errorMsg });
     }
   };
   const submitAnswer = async (data) => {
@@ -118,7 +125,9 @@ export const useQuizSession = () => {
       );
       return res.data;
     } catch (err) {
+      const errorMsg = err.response?.data?.message || "Failed to submit answer.";
       console.error("Failed to submit answer:", err);
+      toast.error({ title: "Error", detail: errorMsg });
       return null;
     }
   };
@@ -129,7 +138,9 @@ export const useQuizSession = () => {
       await quizApi.completeQuiz(sessionId);
       dispatch(setPlayerStatus("completed"));
     } catch (err) {
+      const errorMsg = err.response?.data?.message || "Failed to complete quiz.";
       console.error("Failed to mark quiz as completed:", err);
+      toast.error({ title: "Error", detail: errorMsg });
     }
   };
 
@@ -140,6 +151,18 @@ export const useQuizSession = () => {
       console.error("Failed to end quiz session:", err);
     }
   };
+
+  const getReview = async (sessionId) => {
+    try {
+      const res = await quizApi.getReview(sessionId);
+      return res.data || [];
+    } catch (err) {
+      console.error("Failed to fetch review:", err);
+      toast.error({ title: "Error", detail: "Failed to load review" });
+      return [];
+    }
+  };
+
   const resetSession = () => {
     dispatch(resetQuizSession());
   }
@@ -153,6 +176,7 @@ export const useQuizSession = () => {
     submitAnswer,
     markCompleted,
     endQuizSession,
+    getReview,
     resetSession
   };
 };

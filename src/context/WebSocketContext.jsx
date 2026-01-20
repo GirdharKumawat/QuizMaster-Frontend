@@ -41,6 +41,7 @@ export const WebSocketProvider = ({ children }) => {
 
         switch (data.type) {
           case "participant_joined":
+            console.log("Received new participant via WS:", data);
             dispatch(
               addParticipant({
                 user_id: data.user_id,

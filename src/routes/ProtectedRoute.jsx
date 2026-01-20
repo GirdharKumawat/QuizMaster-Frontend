@@ -1,45 +1,59 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/useAuth";
+import { Loader, Card } from "../components/UI/ui";
 
 function ProtectedRoute({ children }) {
-    const { checkAuth, authState } = useAuth();
-    const { isAuthenticated } = authState;
-    const navigate = useNavigate();
-    const [isChecking, setIsChecking] = useState(true);
-    const hasChecked = useRef(false);
+  const { checkAuth, authState } = useAuth();
+  const { isAuthenticated } = authState;
+  const navigate = useNavigate();
+  const [isChecking, setIsChecking] = useState(true);
+  const [isValid, setIsValid] = useState(false);
+  const hasChecked = useRef(false);
 
-    useEffect(() => {
-        const validateAuth = async () => {
-            if (hasChecked.current) return;
-            hasChecked.current = true;
+  useEffect(() => {
+    const validateAuth = async () => {
+      if (hasChecked.current) return;
+      hasChecked.current = true;
 
-            if (!isAuthenticated) {
-                try {
-                    const isValid = await checkAuth();
-                    if (!isValid) {
-                        navigate("/login", { replace: true });
-                    }
-                } catch (err) {
-                    console.error("Error during auth check", err);
-                    navigate("/login", { replace: true });
-                }
-            }
-            setIsChecking(false);
-        };
+      // If already authenticated in Redux, skip API call
+      if (isAuthenticated) {
+        setIsValid(true);
+        setIsChecking(false);
+        return;
+      }
 
-        validateAuth();
-    }, []);  
+      try {
+        const authResult = await checkAuth();
+        if (authResult) {
+          setIsValid(true);
+        } else {
+          navigate("/login", { replace: true });
+        }
+      } catch (err) {
+        console.error("Error during auth check", err);
+        navigate("/login", { replace: true });
+      }
+      setIsChecking(false);
+    };
 
-    if (isChecking && !isAuthenticated) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-500"></div>
-            </div>
-        );
-    }
+    validateAuth();
+  }, []);
 
-    return isAuthenticated ? children : null;
+  if (isChecking) {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6]">
+                <Loader variant="bouncing" size="sm" />
+        </div>
+    );
+  }
+
+  if (!isValid && !isAuthenticated) {
+    return null;
+  }
+
+  return children;
 }
 
 export default ProtectedRoute;
+ 

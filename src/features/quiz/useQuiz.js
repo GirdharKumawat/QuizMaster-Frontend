@@ -8,7 +8,7 @@ import {
     addEnrolledQuiz, 
     setCanTry 
 } from "./quizSlice";
-import { toast } from "sonner";
+import { toast } from "../../components/UI/ui";
 import { quizApi } from "../../api/quizApi"; // Import API Layer
 
 export const useQuiz = () => {
@@ -29,7 +29,7 @@ export const useQuiz = () => {
         } catch (err) {
             const errorMsg = err.response?.data?.message || "Failed to fetch quizzes.";
             dispatch(setError(errorMsg));
-            toast.error(errorMsg);
+            toast.error({ title: "Error", detail: errorMsg });
         } finally {
             dispatch(setLoading(false));
         }
@@ -47,12 +47,12 @@ export const useQuiz = () => {
                 dispatch(addCreatedQuiz(newQuiz));
             }
             
-            toast.success("Quiz created successfully!");
+            toast.success({ title: "Success", detail: "Quiz created successfully!" });
             return newQuiz;
         } catch (err) {
             const errorMsg = err.response?.data?.message || "Failed to create quiz.";
             dispatch(setError(errorMsg));
-            toast.error(errorMsg);
+            toast.error({ title: "Error", detail: errorMsg });
             return null;
         } finally {
             dispatch(setLoading(false));
@@ -67,12 +67,15 @@ export const useQuiz = () => {
             if (joinedQuiz) {
                 dispatch(addEnrolledQuiz(joinedQuiz));
             }
-            toast.success("Joined quiz successfully!");
+            toast.success({ title: "Success", detail: "Joined quiz successfully!" });
             return joinedQuiz;
         } catch (err) {
             const errorMsg = err.response?.data?.message || "Failed to join quiz.";
             dispatch(setError(errorMsg));
-            toast.error(err.response?.data?.detail || errorMsg);
+            toast.error({ 
+                title: "Failed to Join", 
+                detail: err.response?.data?.detail || errorMsg 
+            });
             return null;
         } finally {
             dispatch(setLoading(false));
