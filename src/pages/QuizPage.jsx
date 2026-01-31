@@ -80,7 +80,6 @@ function QuizPage() {
     }
 
     if (timeLeft <= 0) {
-      console.log("Time's up! Completing quiz...");
       handleQuizComplete();
     }
   }, [timeLeft, timerStarted]);
@@ -102,7 +101,6 @@ function QuizPage() {
   };
 
   const handleQuizComplete = async () => {
-    console.log("Marking quiz as completed...");
     await markCompleted(session_id);
     navigate(`/leaderboard/${session_id}`);
   };
@@ -237,35 +235,35 @@ function QuizPage() {
         </div>
 
         {/* Question Card */}
-        <div className="border-2 border-black bg-white p-6 md:p-8 shadow-[8px_8px_0px_0px_#000] space-y-6">
+        <div className="border-2 border-black bg-white p-6 md:p-8 shadow-[8px_8px_0px_0px_#000] flex flex-col min-h-[500px]">
           {currentQuestion ? (
             <>
               {/* Question Text */}
-              <div className="space-y-4">
+              <div className="space-y-4 min-h-[120px]">
                 <div className="inline-block bg-black text-white px-3 py-1 font-black text-sm uppercase">
                   Question {currentQuestionIndex + 1}
                 </div>
-                <h2 className="text-xl md:text-2xl font-black leading-snug">
+                <h2 className="text-xl md:text-2xl font-black leading-snug line-clamp-3">
                   {currentQuestion.question}
                 </h2>
               </div>
 
               {/* Options */}
-              <div className="grid gap-3">
+              <div className="grid gap-3 flex-1 content-start mt-6">
                 {(currentQuestion.options || []).map((opt, idx) => {
                   const isSelected = selectedOption === opt;
                   return (
                     <button
                       key={idx}
                       onClick={() => setSelectedOption(opt)}
-                      className={`w-full text-left p-4 border-2 border-black transition-all flex items-center gap-4 ${
+                      className={`w-full text-left p-4 border-2 border-black transition-all flex items-center gap-4 min-h-[64px] ${
                         isSelected
                           ? "bg-[#4ADE80] shadow-[4px_4px_0px_0px_#000] translate-x-[-2px] translate-y-[-2px]"
                           : "bg-white hover:bg-gray-50"
                       }`}
                     >
                       <div
-                        className={`w-10 h-10 border-2 border-black flex items-center justify-center font-black text-lg ${
+                        className={`w-10 h-10 shrink-0 border-2 border-black flex items-center justify-center font-black text-lg ${
                           isSelected
                             ? "bg-black text-white"
                             : "bg-gray-100"
@@ -273,7 +271,7 @@ function QuizPage() {
                       >
                         {isSelected ? <CheckCircle size={20} strokeWidth={3} /> : String.fromCharCode(65 + idx)}
                       </div>
-                      <span className="font-bold text-lg">
+                      <span className="font-bold text-lg line-clamp-2 break-words">
                         {opt}
                       </span>
                     </button>
@@ -282,7 +280,7 @@ function QuizPage() {
               </div>
 
               {/* Next Button */}
-              <div className="pt-6 border-t-2 border-black flex justify-end">
+              <div className="pt-6 mt-auto border-t-2 border-black flex justify-end">
                 <Button
                   onClick={handleNext}
                   disabled={!selectedOption}

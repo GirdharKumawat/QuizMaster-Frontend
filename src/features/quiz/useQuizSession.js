@@ -1,6 +1,7 @@
 import { quizApi } from "../../api/quizApi"; // Import APtoastI Layer
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "../../components/UI/ui";
+import { useGlobalWebSocket } from "../../context/WebSocketContext";
 
 import {
   setStatus,
@@ -17,6 +18,7 @@ export const useQuizSession = () => {
   const authState = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const quizSession = useSelector((state) => state.quizSession);
+  const { disconnect } = useGlobalWebSocket();
 
 
   const calculateTimeLeft =  (quiz_start_time,durationInMinutes)=> {
@@ -34,6 +36,7 @@ export const useQuizSession = () => {
       const res = await quizApi.get(session_id);
       dispatch(
         setQuizDetails({
+          session_id: session_id,
           quiz_id: res.data.quiz_id,
           title: res.data.title,
           description: res.data.description,
@@ -164,6 +167,7 @@ export const useQuizSession = () => {
   };
 
   const resetSession = () => {
+    disconnect(); // Disconnect WebSocket when resetting session
     dispatch(resetQuizSession());
   }
 

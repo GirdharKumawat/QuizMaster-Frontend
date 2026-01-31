@@ -41,7 +41,6 @@ export const WebSocketProvider = ({ children }) => {
 
         switch (data.type) {
           case "participant_joined":
-            console.log("Received new participant via WS:", data);
             dispatch(
               addParticipant({
                 user_id: data.user_id,
@@ -70,7 +69,6 @@ export const WebSocketProvider = ({ children }) => {
             );
             break;
           case "update_participant_status":
-            console.log("Received participant status update via WS:", data);
             dispatch(
               updateParticipantStatus({
                 user_id: data.user_id,
@@ -89,11 +87,9 @@ export const WebSocketProvider = ({ children }) => {
     };
 
     ws.onopen = () => {
-      console.log("[Context] Connected");
       setIsWebSocketConnected(true);
     };
     ws.onclose = () => {
-      console.log("[Context] Disconnected");
       setIsWebSocketConnected(false);
     };
   };

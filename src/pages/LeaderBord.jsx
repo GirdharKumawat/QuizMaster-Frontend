@@ -14,7 +14,7 @@ function LeaderBordPage() {
   const { id: userId } = authState;
 
   const { quizSession, getQuizDetails, endQuizSession, resetSession, getReview } = useQuizSession();
-  const { title, status, host_id, isInitialState, participants } = quizSession;
+  const { title, status, host_id, isInitialState, participants, session_id: storedSessionId } = quizSession;
   
   // Review state
   const [reviewData, setReviewData] = useState([]);
@@ -27,7 +27,7 @@ function LeaderBordPage() {
 
   // Determine if current user is the host
   const isHost = host_id === userId;
-  const isLoading = isInitialState;
+  const isLoading = isInitialState || storedSessionId !== session_id;
   const isCompleted = status === "completed";
 
   // Fetch review data when quiz is completed
@@ -44,10 +44,12 @@ function LeaderBordPage() {
   };
 
   useEffect(() => {
-    if (isInitialState) {
+    // Fetch if initial state OR if session_id changed (navigated to different quiz)
+    if (isInitialState || storedSessionId !== session_id) {
+      console.log("Fetching quiz details for session:", session_id);
       getQuizDetails(session_id, userId);
     }
-  }, [session_id, isInitialState]);
+  }, [session_id, isInitialState, storedSessionId]);
 
   // Prepare sorted leaderboard with rankings from quizSession participants
   const sortedLeaderboard = useMemo(() => {

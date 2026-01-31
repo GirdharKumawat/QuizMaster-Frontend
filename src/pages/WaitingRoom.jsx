@@ -24,6 +24,7 @@ function WaitingRoomPage() {
     question_count,
     playerStatus,
     isInitialState,
+    session_id: storedSessionId,
   } = quizSession;
 
   useQuizWebSocket(session_id);
@@ -32,13 +33,18 @@ function WaitingRoomPage() {
   const isHost = host_id === userId;
 
   useEffect(() => {
-    if (isInitialState) {
+    // Fetch if initial state OR if session_id changed (navigated to different quiz)
+    if (isInitialState || storedSessionId !== session_id) {
       getQuizDetails(session_id, userId);
     }
-  }, [session_id, isInitialState]);
+  }, [session_id, isInitialState, storedSessionId]);
 
-// TODO: playerStatus dependency ensures effect re-runs when status changes to trigger navigation
   useEffect(() => {
+    // Only run navigation logic when data is loaded for the CURRENT session
+    if (isInitialState || storedSessionId !== session_id) {
+      return; // Wait for correct data to load
+    }
+
     if (playerStatus === "active" && !isHost) {
       toast.success({ title: "Quiz Started", detail: "Good luck!" });
       navigate(`/quiz/${session_id}`);
@@ -52,7 +58,7 @@ function WaitingRoomPage() {
     if (status === "active" && isHost) {
       navigate(`/leaderboard/${session_id}`);
     }
-  }, [isHost, session_id, status, playerStatus, navigate]);
+  }, [isHost, session_id, status, playerStatus, navigate, isInitialState, storedSessionId]);
 
   // --- HANDLERS ---
   const handleStart = async () => {

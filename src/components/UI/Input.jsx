@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
-const Input = ({ 
-  label, 
-  icon: Icon, 
-  type = 'text', 
-  placeholder, 
-  value, 
-  onChange, 
-  styleType = 'classic', // pop | classic
-  className = '',
+const Input = ({
+  label,
+  icon: Icon,
+  type = "text",
+  placeholder,
+  value,
+  onChange,
+  styleType = "classic", // pop | classic
+  className = "",
   ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const isPassword = type === 'password';
-  const inputType = isPassword && showPassword ? 'text' : type;
-  
-  const shapeClass = styleType === 'classic' ? '' : 'rounded-xl';
+  const isPassword = type === "password";
+  const inputType = isPassword && showPassword ? "text" : type;
+
+  const shapeClass = styleType === "classic" ? "" : "rounded-xl";
 
   return (
     <div className={`mb-4 w-full ${className}`}>
@@ -44,8 +44,8 @@ const Input = ({
             w-full bg-white text-black font-bold 
             neo-border neo-shadow
             p-2
-            text-center
-            ${Icon ? 'pl-12' : 'pl-4'} 
+             
+            ${Icon ? "pl-12" : "pl-4"} pr-10
             ${shapeClass}
             focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none 
             placeholder:text-gray-400 placeholder:font-medium

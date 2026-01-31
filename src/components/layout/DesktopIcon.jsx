@@ -1,6 +1,7 @@
 import React from 'react';
 
 const DesktopIcon = ({ label, icon: Icon, color, onClick }) => (
+  
   <button
     onClick={onClick}
     className="group flex flex-col items-center gap-3 p-4 transition-transform hover:-translate-y-2 focus:outline-none"

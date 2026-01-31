@@ -65,7 +65,8 @@ const quizSessionSlice = createSlice({
 
     // metaData management
     setQuizDetails(state, action) {
-      const { quiz_id, title, description, duration,host_id,question_count } = action.payload;
+      const { session_id, quiz_id, title, description, duration,host_id,question_count } = action.payload;
+      state.session_id = session_id;
       state.quiz_id = quiz_id;
         state.title = title;
         state.description = description;
@@ -101,7 +102,12 @@ const quizSessionSlice = createSlice({
       state.questions = [];
       state.timeLeft = 0;
       state.playerStatus = "lobby";
-      state.isInitialState = true;},
+      state.isInitialState = true;
+
+      console.log("Quiz session state has been reset to initial state.");
+
+    },
+
   },
 });
 export const {

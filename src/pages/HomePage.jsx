@@ -41,6 +41,7 @@ const HomePage = () => {
 
   useEffect(() => {
     resetSession();
+
     getAllQuizzes();
   }, []);
 

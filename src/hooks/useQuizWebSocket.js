@@ -1,17 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useGlobalWebSocket } from '../context/WebSocketContext.jsx';
 export const useQuizWebSocket = (sessionId) => {
-    const { connect,isWebSocketConnected } = useGlobalWebSocket();
+    const { connect, isWebSocketConnected } = useGlobalWebSocket();
+    const lastSessionIdRef = useRef(null);
 
     useEffect(() => {
-
-        if (isWebSocketConnected) {
-            return;
-        }
-
-        if (sessionId) {
+        // Always connect if sessionId changed OR not connected yet
+        if (sessionId && (sessionId !== lastSessionIdRef.current || !isWebSocketConnected)) {
+            lastSessionIdRef.current = sessionId;
             connect(sessionId);
         }
-         
-    }, [sessionId, connect]);
+        }, [sessionId, connect, isWebSocketConnected]);
 };
