@@ -12,15 +12,14 @@ const getDiffColor = (diff) => {
   }
 };
 
-const StatCard = ({ icon: Icon,  value, color }) => (
-  
+const StatCard = ({ icon: Icon,  label,value, color, }) => (
   <div className={`${color} border-2 border-black p-4 shadow-[4px_4px_0px_0px_#000] flex items-center gap-3 hover:shadow-[6px_6px_0px_0px_#000] hover:-translate-y-1 transition-all`}>
     <div className="w-12 h-12 bg-white border-2 border-black flex items-center justify-center">
       <Icon size={24} strokeWidth={2.5} />
     </div>
     <div>
       <p className="text-2xl font-black">{value}</p>
-      <p className="text-xs font-bold uppercase tracking-wide opacity-80">{el}</p>
+      <p className="text-xs font-bold uppercase tracking-wide opacity-80">{label}</p>
     </div>
   </div>
 );
