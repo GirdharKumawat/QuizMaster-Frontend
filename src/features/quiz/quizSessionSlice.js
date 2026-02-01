@@ -65,12 +65,13 @@ const quizSessionSlice = createSlice({
 
     // metaData management
     setQuizDetails(state, action) {
-      const { session_id, quiz_id, title, description, duration,host_id,question_count } = action.payload;
+      const { session_id, quiz_id, title, description, duration,pointsPerCorrect,host_id,question_count } = action.payload;
       state.session_id = session_id;
       state.quiz_id = quiz_id;
         state.title = title;
         state.description = description;
         state.duration = duration;
+        state.pointsPerCorrect = pointsPerCorrect;
         state.host_id=host_id;
         state.question_count=question_count;
 

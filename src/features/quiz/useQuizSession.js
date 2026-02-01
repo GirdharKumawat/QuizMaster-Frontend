@@ -41,6 +41,7 @@ export const useQuizSession = () => {
           title: res.data.title,
           description: res.data.description,
           duration: res.data.duration,
+          pointsPerCorrect: res.data.points_per_correct,
           host_id: res.data.host_id,
           question_count: res.data.question_count,
         })

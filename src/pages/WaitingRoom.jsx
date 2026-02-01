@@ -1,6 +1,15 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Play, Copy, Users, Clock, HelpCircle, Zap, AlertTriangle, Home } from "lucide-react";
+import {
+  Play,
+  Copy,
+  Users,
+  Clock,
+  HelpCircle,
+  Zap,
+  AlertTriangle,
+  Home,
+} from "lucide-react";
 import { Button, toast } from "../components/UI/ui";
 import { useAuth } from "../features/auth/useAuth";
 import { useQuizSession } from "../features/quiz/useQuizSession";
@@ -13,13 +22,13 @@ function WaitingRoomPage() {
   const { authState } = useAuth();
   const { id: userId } = authState;
 
-  const { quizSession, startQuizSession, getQuizDetails } =
-    useQuizSession();
+  const { quizSession, startQuizSession, getQuizDetails } = useQuizSession();
   const {
     status,
     participants,
     title,
     duration,
+    pointsPerCorrect,
     host_id,
     question_count,
     playerStatus,
@@ -50,7 +59,10 @@ function WaitingRoomPage() {
       navigate(`/quiz/${session_id}`);
     }
     if (status === "completed" || playerStatus === "completed") {
-      toast.info({ title: "Quiz Ended", detail: "Redirecting to leaderboard..." });
+      toast.info({
+        title: "Quiz Ended",
+        detail: "Redirecting to leaderboard...",
+      });
       navigate(`/leaderboard/${session_id}`);
     }
 
@@ -58,7 +70,15 @@ function WaitingRoomPage() {
     if (status === "active" && isHost) {
       navigate(`/leaderboard/${session_id}`);
     }
-  }, [isHost, session_id, status, playerStatus, navigate, isInitialState, storedSessionId]);
+  }, [
+    isHost,
+    session_id,
+    status,
+    playerStatus,
+    navigate,
+    isInitialState,
+    storedSessionId,
+  ]);
 
   // --- HANDLERS ---
   const handleStart = async () => {
@@ -68,16 +88,23 @@ function WaitingRoomPage() {
     } else if (status === "active" && !isHost) {
       navigate(`/quiz/${session_id}`);
     } else {
-      toast.error({ title: "Permission Denied", detail: "Only the host can start the quiz" });
+      toast.error({
+        title: "Permission Denied",
+        detail: "Only the host can start the quiz",
+      });
     }
   };
 
   const copyCode = () => {
     // Try modern Clipboard API first
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(session_id)
+      navigator.clipboard
+        .writeText(session_id)
         .then(() => {
-          toast.success({ title: "Copied", detail: "Room code copied to clipboard" });
+          toast.success({
+            title: "Copied",
+            detail: "Room code copied to clipboard",
+          });
         })
         .catch(() => {
           fallbackCopy();
@@ -97,7 +124,10 @@ function WaitingRoomPage() {
     textarea.select();
     try {
       document.execCommand("copy");
-      toast.success({ title: "Copied", detail: "Room code copied to clipboard" });
+      toast.success({
+        title: "Copied",
+        detail: "Room code copied to clipboard",
+      });
     } catch (err) {
       toast.error({ title: "Failed", detail: "Could not copy code" });
     }
@@ -117,7 +147,6 @@ function WaitingRoomPage() {
   return (
     <div className="min-h-screen bg-[#F0F2F5] p-4 md:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
-        
         {/* Header Card */}
         <div className="border-2 border-black bg-[#FFD028] p-6 shadow-[8px_8px_0px_0px_#000]">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -138,15 +167,19 @@ function WaitingRoomPage() {
                   <Copy size={16} strokeWidth={3} />
                   {session_id}
                 </button>
-                
+
                 <div className="flex items-center gap-2 bg-white border-2 border-black px-4 py-2 font-bold">
                   <HelpCircle size={16} strokeWidth={3} />
                   {question_count || 0} Questions
                 </div>
-                
+
                 <div className="flex items-center gap-2 bg-white border-2 border-black px-4 py-2 font-bold">
                   <Clock size={16} strokeWidth={3} />
-                  {duration || 60}s / Q
+                  {duration / question_count || 60}s / Q
+                </div>
+                <div className="flex items-center gap-2 bg-white border-2 border-black px-4 py-2 font-bold">
+                  <Zap size={16} strokeWidth={3} />
+                  {pointsPerCorrect || 1} Pt(s) / Correct
                 </div>
               </div>
             </div>
@@ -160,10 +193,10 @@ function WaitingRoomPage() {
                 <Home size={20} strokeWidth={3} />
                 Home
               </Button>
-              
+
               {isHost && (
                 <Button
-                variant="secondary"
+                  variant="secondary"
                   onClick={handleStart}
                   className="px-8 py-3 bg-[#4ADE80] text-black border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all rounded-none font-black text-lg uppercase flex items-center gap-2"
                 >
@@ -171,7 +204,7 @@ function WaitingRoomPage() {
                   Start Quiz
                 </Button>
               )}
-              
+
               {!isHost && status === "active" && playerStatus === "lobby" && (
                 <Button
                   onClick={handleStart}
@@ -181,7 +214,7 @@ function WaitingRoomPage() {
                   Join Game
                 </Button>
               )}
-              
+
               {!isHost && status !== "active" && (
                 <div className="px-6 py-3 bg-white border-2 border-black font-black uppercase text-sm flex items-center gap-2 animate-pulse">
                   <AlertTriangle size={18} strokeWidth={3} />
@@ -194,7 +227,6 @@ function WaitingRoomPage() {
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
           {/* Players List */}
           <div className="lg:col-span-2 border-2 border-black bg-white p-5 shadow-[4px_4px_0px_0px_#000]">
             <div className="flex items-center justify-between mb-4">
@@ -230,7 +262,8 @@ function WaitingRoomPage() {
                         {p.name?.charAt(0).toUpperCase()}
                       </div>
                       <span className="font-bold uppercase">
-                        {p.name} {isMe && <span className="text-xs">(YOU)</span>}
+                        {p.name}{" "}
+                        {isMe && <span className="text-xs">(YOU)</span>}
                       </span>
                     </div>
                   </li>
@@ -254,21 +287,25 @@ function WaitingRoomPage() {
               </h3>
               <ul className="space-y-2 font-bold text-sm">
                 <li className="flex items-start gap-2">
-                  <span className="bg-black text-white px-1.5 py-0.5 text-xs font-black">1</span>
+                  <span className="bg-black text-white px-1.5 py-0.5 text-xs font-black">
+                    1
+                  </span>
                   Don't refresh the page once the game starts.
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="bg-black text-white px-1.5 py-0.5 text-xs font-black">2</span>
+                  <span className="bg-black text-white px-1.5 py-0.5 text-xs font-black">
+                    2
+                  </span>
                   Answer quickly to get more points.
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="bg-black text-white px-1.5 py-0.5 text-xs font-black">3</span>
+                  <span className="bg-black text-white px-1.5 py-0.5 text-xs font-black">
+                    3
+                  </span>
                   Host can end the quiz at any time.
                 </li>
               </ul>
             </div>
-            
-           
           </div>
         </div>
       </div>
