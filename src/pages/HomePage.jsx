@@ -7,7 +7,6 @@ import {
   CreateQuizWindow,
   JoinQuizWindow,
 } from "../components/layout/Layout";
-import DesktopIcon from "../components/layout/DesktopIcon";
 import { useNavigate } from "react-router-dom";
 import {
   Crown,
@@ -16,160 +15,213 @@ import {
   DoorOpen,
   Gamepad2,
   Trophy,
+  LogOut,
+  Menu,
+  X,
 } from "lucide-react";
 import { useQuiz } from "../features/quiz/useQuiz";
 import { useQuizSession } from "../features/quiz/useQuizSession";
 import { useAuth } from "../features/auth/useAuth";
 
- 
+const navItems = [
+  { id: "home", label: "Dashboard", icon: Gamepad2, color: "bg-[#FFD028]", activeRing: "ring-[#FFD028]" },
+  { id: "created", label: "Hosted", icon: Crown, color: "bg-[#A78BFA]", activeRing: "ring-[#A78BFA]" },
+  { id: "enrolled", label: "Enrolled", icon: Zap, color: "bg-[#22D3EE]", activeRing: "ring-[#22D3EE]" },
+  { id: "history", label: "History", icon: Trophy, color: "bg-[#F472B6]", activeRing: "ring-[#F472B6]" },
+  { id: "create", label: "Create", icon: PlusSquare, color: "bg-[#FB923C]", activeRing: "ring-[#FB923C]" },
+  { id: "join", label: "Join", icon: DoorOpen, color: "bg-[#4ADE80]", activeRing: "ring-[#4ADE80]" },
+];
+
 const HomePage = () => {
   const navigate = useNavigate();
 
-  // Logic
   const { quizState, getAllQuizzes } = useQuiz();
-  const {resetSession} = useQuizSession();
-  const { authState } = useAuth();
+  const { resetSession } = useQuizSession();
+  const { authState, logoutUser } = useAuth();
   const { username } = authState;
   const { createdQuizzes, enrolledQuizzes } = quizState;
 
-  // Tabs - Show dashboard by default on large screens
-  const [activeWindow, setActiveWindow] = useState(() => {
-    return window.innerWidth >= 768 ? "home" : null;
-  });
-    
-    
+  const [activeWindow, setActiveWindow] = useState("home");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     resetSession();
-
     getAllQuizzes();
   }, []);
 
-  // Filter Logic for Enrolled Quizzes as well as for created quizzes
+  // Filter Logic
   const activeEnrolled = enrolledQuizzes?.filter(q => q.status !== "completed") || [];
   const completedEnrolled = enrolledQuizzes?.filter(q => q.status === "completed") || [];
-  const completedCreated = createdQuizzes?.filter(q => q.status === "completed") || [];  
+  const completedCreated = createdQuizzes?.filter(q => q.status === "completed") || [];
 
+  const handleNavClick = (id) => {
+    setActiveWindow(id);
+    setSidebarOpen(false);
+  };
+
+  const activeItem = navItems.find(n => n.id === activeWindow);
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-[#F0F2F5] font-sans overflow-hidden selection:bg-[#FFD028] selection:text-black">
-      <div className="flex-1 overflow-y-auto p-6 md:p-10">
-        {/* --- HEADER --- */}
-        <div className="max-w-5xl  mb-4 text-center md:text-left">
-          <div className="inline-block bg-[#FFD028] border-2 border-black px-6 py-2 shadow-[4px_4px_0px_0px_#000] mb-4 -rotate-1">
-            <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">
-              Welcome, {username}!
-            </h1>
-          </div>
-          <br />
+    <div className="flex h-screen bg-[#F0F2F5] font-sans overflow-hidden selection:bg-[#FFD028] selection:text-black">
 
-          <p className="font-bold text-lg md:text-xl bg-white border-2 border-black p-3 shadow-[4px_4px_0px_0px_#000] inline-block max-w-2xl">
-            The ultimate arena for knowledge warriors.
-          </p>
+      {/* ========== SIDEBAR ========== */}
+      {/* Overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`
+          fixed md:static inset-y-0 left-0 z-40
+          w-64 md:w-72 flex flex-col
+          bg-white border-r-2 border-black
+          shadow-[4px_0px_0px_0px_#000]
+          transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+        `}
+      >
+        {/* Sidebar Header */}
+        <div className="p-4 border-b-2 border-black">
+          <div className="bg-[#FFD028] border-2 border-black px-3 py-2.5 shadow-[3px_3px_0px_0px_#000] -rotate-1">
+            <p className="text-xs font-bold uppercase tracking-wide opacity-60">Welcome</p>
+            <h2 className="text-base font-black uppercase tracking-tight truncate">{username}</h2>
+          </div>
         </div>
 
-        {/* --- DYNAMIC CONTENT --- */}
-        <div className="max-w-6xl min-h-[500px] flex flex-col md:flex-row gap-6">
-          {/* Desktop Icons Sidebar - Hidden on small screens when window is open */}
-          <div className={`shrink-0 ${activeWindow ? 'hidden md:block' : 'block'}`}>
-            <div className="grid grid-cols-3 md:grid-cols-2 gap-4 transition-all duration-300">
-              <DesktopIcon
-                label="Home"
-                icon={Gamepad2}
-                color="bg-[#FFD028]"
-                onClick={() => setActiveWindow("home")}
-              />
-              <DesktopIcon
-                label="Hosted"
-                icon={Crown}
-                color="bg-[#A78BFA]"
-                onClick={() => setActiveWindow("created")}
-              />
-              <DesktopIcon
-                label="Enrolled"
-                icon={Zap}
-                color="bg-[#22D3EE]"
-                onClick={() => setActiveWindow("enrolled")}
-              />
-              <DesktopIcon
-                label="History"
-                icon={Trophy}
-                color="bg-[#F472B6]"
-                onClick={() => setActiveWindow("history")}
-              />
-              <DesktopIcon
-                label="Create"
-                icon={PlusSquare}
-                color="bg-[#FB923C]"
-                onClick={() => setActiveWindow("create")}
-              />
-              <DesktopIcon
-                label="Join"
-                icon={DoorOpen}
-                color="bg-[#4ADE80]"
-                onClick={() => setActiveWindow("join")}
-              />
+        {/* Nav Items */}
+        <nav className="flex-1 overflow-y-auto p-3 space-y-1.5">
+          {navItems.map(({ id, label, icon: Icon, color, activeRing }) => {
+            const isActive = activeWindow === id;
+            return (
+              <button
+                key={id}
+                onClick={() => handleNavClick(id)}
+                className={`
+                  w-full flex items-center gap-3 px-3 py-3
+                  border-2 border-black font-bold text-sm uppercase tracking-wide
+                  transition-all duration-200 text-left
+                  ${isActive
+                    ? `${color} shadow-none translate-x-[2px] translate-y-[2px] ring-2 ${activeRing} ring-offset-1`
+                    : "bg-white shadow-[3px_3px_0px_0px_#000] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#000]"
+                  }
+                `}
+              >
+                <div className={`w-8 h-8 flex items-center justify-center border-2 border-black ${isActive ? "bg-white" : color}`}>
+                  <Icon size={16} strokeWidth={2.5} />
+                </div>
+                <span>{label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Sidebar Footer */}
+        <div className="p-3 border-t-2 border-black">
+          <button
+            onClick={logoutUser}
+            className="
+              w-full flex items-center gap-3 px-3 py-3
+              bg-[#FF6B6B] border-2 border-black font-bold text-sm uppercase tracking-wide
+              shadow-[3px_3px_0px_0px_#000] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]
+              transition-all active:shadow-none active:translate-x-[2px] active:translate-y-[2px]
+            "
+          >
+            <div className="w-8 h-8 flex items-center justify-center border-2 border-black bg-white">
+              <LogOut size={16} strokeWidth={2.5} />
             </div>
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* ========== MAIN CONTENT ========== */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        {/* Top Bar */}
+        <header className="flex items-center justify-between px-4 md:px-8 py-3 border-b-2 border-black bg-white shrink-0">
+          {/* Mobile menu toggle */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="md:hidden p-2 border-2 border-black bg-[#FFD028] shadow-[2px_2px_0px_0px_#000] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all"
+          >
+            <Menu size={20} strokeWidth={2.5} />
+          </button>
+
+          {/* Breadcrumb / Page Title */}
+          <div className="flex items-center gap-2">
+            {activeItem && (
+              <>
+                <div className={`w-7 h-7 ${activeItem.color} border-2 border-black flex items-center justify-center`}>
+                  <activeItem.icon size={14} strokeWidth={2.5} />
+                </div>
+                <h1 className="text-base font-black uppercase tracking-tight">
+                  {activeItem.label}
+                </h1>
+              </>
+            )}
           </div>
 
-          {/* Window Content Area */}
-          <div className="flex-1 min-w-0 md:ms-20">
-            {/* 1. HOME (Overview) */}
+          {/* Tagline */}
+          <p className="hidden lg:block font-bold text-xs bg-[#F0F2F5] border-2 border-black px-3 py-1.5 shadow-[2px_2px_0px_0px_#000]">
+            The ultimate arena for knowledge warriors
+          </p>
+        </header>
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+          <div className="max-w-5xl mx-auto h-full">
             {activeWindow === "home" && (
               <DashboardWindow
                 username={username}
                 createdQuizzes={createdQuizzes}
                 enrolledQuizzes={enrolledQuizzes}
-                onClose={() => setActiveWindow(null)}
+                onClose={() => setActiveWindow("home")}
               />
             )}
 
-            {/* 2. HOSTED QUIZZES */}
             {activeWindow === "created" && (
               <HostedQuizzesWindow
                 createdQuizzes={createdQuizzes}
                 onNavigate={navigate}
                 onCreateClick={() => setActiveWindow("create")}
-                onClose={() => setActiveWindow(null)}
+                onClose={() => setActiveWindow("home")}
               />
             )}
 
-            {/* 3. ENROLLED QUIZZES (Active) */}
             {activeWindow === "enrolled" && (
               <EnrolledQuizzesWindow
                 activeEnrolled={activeEnrolled}
                 onNavigate={navigate}
-                onClose={() => setActiveWindow(null)}
+                onClose={() => setActiveWindow("home")}
               />
             )}
 
-            {/* 4. HISTORY (Completed) */}
             {activeWindow === "history" && (
-              <HistoryWindow 
+              <HistoryWindow
                 completedEnrolled={completedEnrolled}
                 completedHosted={completedCreated}
                 onNavigate={navigate}
-                onClose={() => setActiveWindow(null)}
+                onClose={() => setActiveWindow("home")}
               />
             )}
 
-            {/* 5. CREATE QUIZ */}
             {activeWindow === "create" && (
               <CreateQuizWindow
-                onClose={() => setActiveWindow(null)}
+                onClose={() => setActiveWindow("home")}
               />
             )}
 
-            {/* 6. JOIN QUIZ */}
             {activeWindow === "join" && (
               <JoinQuizWindow
-                onClose={() => setActiveWindow(null)}
+                onClose={() => setActiveWindow("home")}
               />
             )}
-
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
