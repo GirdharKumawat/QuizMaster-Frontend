@@ -37,3 +37,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+
+
+
+@keyframes scroll {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-66.66%); }
+}
