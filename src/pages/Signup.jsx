@@ -1,31 +1,29 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { User, Mail, Lock, ArrowRight, CheckCircle } from "lucide-react";
-import { Button, Card, Input, StickyNote, Icons,toast } from "../components/UI/ui";
+import { Button, Card, Input, StickyNote, toast } from "../components/UI/ui";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/useAuth";
-import { useEffect } from "react";
 const SignupPage = () => {
   const [formData, setFormData] = useState({
-    name: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
 
   const navigate = useNavigate();
-  const { signupUser,authState } = useAuth();
+  const { signupUser, authState } = useAuth();
   const {loading} = authState;
   const [disabled, setDisabled] = useState(true);
 
   useEffect(() => {
-    const { name, email, password, confirmPassword } = formData;
-    if (name.trim() && email.trim() && password.trim() && confirmPassword.trim()) {
+    const { username, email, password, confirmPassword } = formData;
+    if (username.trim() && email.trim() && password.trim() && confirmPassword.trim()) {
       setDisabled(false);
     } else {
       setDisabled(true);
     }
   }, [formData]);
-
 
   const handleSignup = (e) => {
     e.preventDefault();
@@ -35,7 +33,7 @@ const SignupPage = () => {
     }
 
     signupUser({
-      username: formData.name,
+      username: formData.username,
       email: formData.email,
       password: formData.password,
     });
@@ -60,13 +58,13 @@ const SignupPage = () => {
 
             <form onSubmit={handleSignup} className="space-y-4">
               <Input
-                label="Full Name"
+                label="Username"
                 icon={User}
                 styleType="classic"
-                placeholder="My Name is..."
-                value={formData.name}
+                placeholder="Pick a username"
+                value={formData.username}
                 onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
+                  setFormData({ ...formData, username: e.target.value })
                 }
               />
 
@@ -121,33 +119,11 @@ const SignupPage = () => {
           </Card>
         </div>
 
-        {/* Right Side: Sticky Note with Google Button */}
         <div className="relative group w-full md:w-80 flex-shrink-0">
           <StickyNote rotate="-rotate-3" className="bg-[#FFD93D] text-black">
             <h3 className="text-2xl font-black uppercase mb-2 leading-none">
               Join Quickly
             </h3>
-            
-            <p className="text-sm font-medium mb-4 leading-tight opacity-90">
-                Skip the form and jump right into the action.
-            </p>
-
-            {/* --- GOOGLE STICKY BUTTON START --- */}
-            <button
-              className="
-                w-full bg-white text-black px-4 py-3 font-bold text-sm border-2 border-black 
-                shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] 
-                hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] 
-                transition-all flex items-center justify-center gap-3 mb-6
-              "
-              onClick={() => console.log("Google Signup Triggered")}
-            >
-              <Icons.Google className="w-5 h-5" /> 
-              <span>Continue with Google</span>
-            </button>
-            {/* --- GOOGLE STICKY BUTTON END --- */}
-
-            <div className="border-t-2 border-black border-dashed mb-4 opacity-20"></div>
 
             <p className="text-sm font-bold mb-3 text-center">
                 Already a Player?

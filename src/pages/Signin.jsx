@@ -1,9 +1,8 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import { Button, Card, Input, StickyNote, Icons } from "../components/UI/ui";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/useAuth";
-import {toast} from "../components/UI/Toast";
 
 const SigninPage = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -81,6 +80,7 @@ const SigninPage = () => {
             >
               AUTHENTICATE
             </Button>
+
           </form>
 
 

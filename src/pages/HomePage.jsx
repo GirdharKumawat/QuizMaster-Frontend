@@ -48,7 +48,6 @@ const HomePage = () => {
   // Filter Logic for Enrolled Quizzes as well as for created quizzes
   const activeEnrolled = enrolledQuizzes?.filter(q => q.status !== "completed") || [];
   const completedEnrolled = enrolledQuizzes?.filter(q => q.status === "completed") || [];
-  const activeCreated = createdQuizzes?.filter(q => q.status !== "completed") || [];
   const completedCreated = createdQuizzes?.filter(q => q.status === "completed") || [];  
 
 
@@ -59,7 +58,7 @@ const HomePage = () => {
         <div className="max-w-5xl  mb-4 text-center md:text-left">
           <div className="inline-block bg-[#FFD028] border-2 border-black px-6 py-2 shadow-[4px_4px_0px_0px_#000] mb-4 -rotate-1">
             <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">
-              Welcomee, {username}!
+              Welcome, {username}!
             </h1>
           </div>
           <br />

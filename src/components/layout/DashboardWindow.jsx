@@ -26,6 +26,8 @@ const StatCard = ({ icon: Icon,  label,value, color, }) => (
 
 const DashboardWindow = ({ username, createdQuizzes, enrolledQuizzes, onClose }) => {
 
+  
+  
   const navigate = useNavigate();
   const completedQuizzes = enrolledQuizzes?.filter(q => q.status === 'completed') || [];
   const activeQuizzes = enrolledQuizzes?.filter(q => q.status !== 'completed') || [];
@@ -38,13 +40,7 @@ const DashboardWindow = ({ username, createdQuizzes, enrolledQuizzes, onClose })
     <Window title="Dashboard Overview" icon={Home} shadowColor="shadow-[#FFD028]" baseColor="bg-[#FFFBEB]" onClose={onClose}>
       <div className="space-y-6">
         {/* Welcome Banner */}
-        <div className="border-2 border-black  p-6 shadow-[4px_4px_0px_0px_#000]">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm font-bold uppercase bg-black text-white px-2 py-1">Dashboard</span>
-          </div>
-          <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-2">Welcome Back, {username}!</h1>
-          <p className="font-bold text-black/70">Ready to challenge your brain? Let's go! 🚀</p>
-        </div>
+        
 
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-2  gap-4">

@@ -18,6 +18,7 @@ export function useAuth() {
       return isAuth;
     } catch (err) {
       dispatch(setIsAuthenticated(false));
+      console.log("Auth check failed", err);
       return false;
     } finally {
       dispatch(setLoading(false));
@@ -37,7 +38,7 @@ export function useAuth() {
       }
 
       toast.success("Login successful");
-      window.location.href = "/";
+      globalThis.location.href = "/home";
     } catch (err) {
       dispatch(setLoading(false));
       dispatch(setIsAuthenticated(false));
@@ -61,15 +62,15 @@ export function useAuth() {
       }
 
       toast.success({ title: "Success", detail: "Account created successfully" });
-      dispatch(setLoading(false));
-      window.location.href = "/";
+      globalThis.location.href = "/home";
     } catch (err) {
-      dispatch(setLoading(false));
       dispatch(setIsAuthenticated(false));
       toast.error({ 
         title: "Sign Up Failed", 
         detail: err.response?.data?.error || "Unable to create account" 
       });
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
@@ -77,9 +78,9 @@ export function useAuth() {
     try {
       await authApi.logout();
       dispatch(setIsAuthenticated(false));
-      dispatch(setUser({ id: null, username: "", email: "" }));
+      dispatch(setUser({ _id: null, username: "", email: "", role: "" }));
       toast.success({ title: "Success", detail: "Logged out successfully" });
-      window.location.href = "/login";
+      globalThis.location.href = "/login";
     } catch (error) {
       dispatch(setIsAuthenticated(false));
       console.error("Logout failed", error);
@@ -104,6 +105,17 @@ export function useAuth() {
     }
   };
 
+  const loginAsGuest = async () => {
+    dispatch(setIsAuthenticated(true));
+    dispatch(
+      setUser({
+        _id: "guest_123",
+        username: "Guest",
+        role: "guest",
+      })
+    );
+  };
+
   return {
     authState,
     checkAuth,
@@ -111,5 +123,6 @@ export function useAuth() {
     signupUser,
     logoutUser,
     fetchUser,
+    loginAsGuest,
   };
 }

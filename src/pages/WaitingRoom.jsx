@@ -42,11 +42,26 @@ function WaitingRoomPage() {
   const isHost = host_id === userId;
 
   useEffect(() => {
-    // Fetch if initial state OR if session_id changed (navigated to different quiz)
-    if (isInitialState || storedSessionId !== session_id) {
-      getQuizDetails(session_id, userId);
-    }
-  }, [session_id, isInitialState, storedSessionId]);
+    let isActive = true;
+
+    const loadQuizDetails = async () => {
+      if (!userId) return;
+
+      // Fetch if initial state OR if session_id changed (navigated to different quiz)
+      if (isInitialState || storedSessionId !== session_id) {
+        const data = await getQuizDetails(session_id, userId);
+        if (!data && isActive) {
+          navigate("/404", { replace: true });
+        }
+      }
+    };
+
+    loadQuizDetails();
+
+    return () => {
+      isActive = false;
+    };
+  }, [session_id, isInitialState, storedSessionId, userId, navigate, getQuizDetails]);
 
   useEffect(() => {
     // Only run navigation logic when data is loaded for the CURRENT session
