@@ -1,4 +1,4 @@
-import  { createContext, useContext, useRef, useMemo, useState } from "react";
+import  { createContext, useContext, useRef, useMemo, useState, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { WS_ENDPOINT } from "../key";
 import {
@@ -15,18 +15,24 @@ export const WebSocketProvider = ({ children }) => {
   const socketRef = useRef(null);
   const dispatch = useDispatch();
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
-  const connect = (sessionId) => {
-    // 1. Prevent Duplicate Connections
+  const connect = useCallback((sessionId) => {
+    // 1. Prevent duplicate connections — already open or connecting to the same session
     if (
       socketRef.current?.url?.includes(sessionId) &&
-      socketRef.current?.readyState === WebSocket.OPEN
+      (socketRef.current?.readyState === WebSocket.OPEN ||
+       socketRef.current?.readyState === WebSocket.CONNECTING)
     ) {
       return;
     }
 
     // 2. Close existing connection if switching sessions
     if (socketRef.current) {
+      // Remove handlers before closing to avoid stale state updates
+      socketRef.current.onopen = null;
+      socketRef.current.onclose = null;
+      socketRef.current.onmessage = null;
       socketRef.current.close();
+      socketRef.current = null;
     }
 
    
@@ -89,22 +95,31 @@ export const WebSocketProvider = ({ children }) => {
     };
 
     ws.onopen = () => {
-      setIsWebSocketConnected(true);
+      // Only update state if this socket is still the current one
+      if (socketRef.current === ws) {
+        setIsWebSocketConnected(true);
+      }
     };
     ws.onclose = () => {
-      setIsWebSocketConnected(false);
+      // Only update state if this socket is still the current one
+      if (socketRef.current === ws) {
+        setIsWebSocketConnected(false);
+      }
     };
-  };
+  }, [dispatch]);
 
-  const disconnect = () => {
+  const disconnect = useCallback(() => {
     if (socketRef.current) {
+      socketRef.current.onopen = null;
+      socketRef.current.onclose = null;
+      socketRef.current.onmessage = null;
       socketRef.current.close();
       socketRef.current = null;
       setIsWebSocketConnected(false);
     }
-  };
+  }, []);
 
-  const value = useMemo(() => ({ connect, disconnect, isWebSocketConnected }), [isWebSocketConnected]);
+  const value = useMemo(() => ({ connect, disconnect, isWebSocketConnected }), [connect, disconnect, isWebSocketConnected]);
 
   return (
     <WebSocketContext.Provider value={value}>

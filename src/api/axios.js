@@ -2,7 +2,7 @@ import axios from "axios";
 import { API_ENDPOINT } from "../key";
 
 const axiosAPI = axios.create({
-    baseURL: API_ENDPOINT + "api/", 
+    baseURL: API_ENDPOINT + "api/v1/", 
     withCredentials: true,
     headers: { "Content-Type": "application/json" },
 });
@@ -21,7 +21,7 @@ axiosAPI.interceptors.response.use(
 
             originalRequest._retry = true;
 
-            await axios.post(`${API_ENDPOINT}api/user/refresh-token/`, null, { withCredentials: true });
+            await axios.post(`${API_ENDPOINT}api/v1/user/refresh-token/`, null, { withCredentials: true });
             return axiosAPI(originalRequest);
         }
         
