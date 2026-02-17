@@ -32,17 +32,17 @@ const NeoModal = ({ isOpen, onClose, title, children, color = "bg-white" }) => {
         className={`
           relative w-full max-w-lg transform transition-all duration-300 ease-out
           ${isAnimating ? 'scale-100 translate-y-0 opacity-100' : 'scale-95 translate-y-8 opacity-0'}
-          ${color} border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-xl overflow-hidden
+          ${color} border-[1.5px] border-gray-900 shadow-[5px_5px_0px_0px_rgba(0,0,0,0.6)] rounded-xl overflow-hidden
         `}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b-2 border-black bg-white/50">
-          <h2 className="text-xl font-black uppercase tracking-tight">{title}</h2>
+        <div className="flex justify-between items-center p-4 border-b-[1.5px] border-gray-900 bg-white/50">
+          <h2 className="text-xl font-bold uppercase tracking-tight">{title}</h2>
           <button 
             onClick={onClose}
-            className="p-1 hover:bg-black hover:text-white border-2 border-transparent hover:border-black rounded transition-all"
+            className="p-1 hover:bg-black hover:text-white border-[1.5px] border-transparent hover:border-gray-900 rounded transition-all"
           >
-            <X size={24} strokeWidth={3} />
+            <X size={22} strokeWidth={2.5} />
           </button>
         </div>
 

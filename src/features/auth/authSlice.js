@@ -1,20 +1,4 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { authApi } from "../../api/authApi"; // Import the API Layer
-
-// Create an async thunk for checking authentication
-export const checkAuthentication = createAsyncThunk(
-  "user/checkAuthentication",
-  async (_, { rejectWithValue }) => {
-    try {
-      const res = await authApi.checkAuth();
-      // Prefer returning an explicit boolean from the API response
-      return Boolean(res.data?.authenticated ?? false);
-    } catch (err) {
-      console.error("Auth check failed", err.response?.data);
-      return rejectWithValue(false);
-    }
-  }
-);
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   loading: false,
@@ -44,20 +28,6 @@ const authSlice = createSlice({
       if (email) state.email = email;
       if (role) state.role = role;
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(checkAuthentication.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(checkAuthentication.fulfilled, (state, action) => {
-        state.loading = false;
-        state.isAuthenticated = !!action.payload;
-      })
-      .addCase(checkAuthentication.rejected, (state) => {
-        state.loading = false;
-        state.isAuthenticated = false;
-      });
   },
 });
 

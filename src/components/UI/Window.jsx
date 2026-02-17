@@ -13,25 +13,25 @@ const Window = ({
   return (
     <div className={`
       w-full h-full flex flex-col ${baseColor}
-      border-2 ${borderColor}
+      border-[1.5px] ${borderColor}
       ${shadowColor} 
-      shadow-[4px_4px_0px_0px_var(--tw-shadow-color),8px_8px_0px_0px_#000]
+      shadow-[3px_3px_0px_0px_var(--tw-shadow-color),5px_5px_0px_0px_rgba(0,0,0,0.7)]
       transition-all duration-300 animate-in fade-in slide-in-from-bottom-4
     `}>
       {/* Header */}
-      <div className="flex justify-between items-center px-4 py-3 border-b-2 border-black bg-white/50 select-none">
+      <div className="flex justify-between items-center px-4 py-2.5 border-b-[1.5px] border-gray-900 bg-white/50 select-none">
           <div className="flex items-center gap-2.5">
-             <div className="p-1.5 bg-black text-white border-2 border-transparent">
-                {Icon ? <Icon size={16} /> : <Star size={16} />}
+             <div className="p-1.5 bg-black text-white border-[1.5px] border-transparent">
+                {Icon ? <Icon size={15} /> : <Star size={15} />}
              </div>
-             <h2 className="text-base md:text-lg font-black uppercase tracking-tight">{title}</h2>
+             <h2 className="text-base md:text-lg font-bold uppercase tracking-tight">{title}</h2>
           </div>
           {onClose && (
             <button 
                 onClick={onClose}
-                className="group p-1.5 bg-white border-2 border-black hover:bg-[#FF6B6B] hover:text-white transition-all active:translate-y-0.5 shadow-[2px_2px_0px_0px_#000]"
+                className="group p-1.5 bg-white border-[1.5px] border-gray-900 hover:bg-[#FF6B6B] hover:text-white transition-all active:translate-y-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.7)]"
             >
-                <X size={18} strokeWidth={3} />
+                <X size={16} strokeWidth={2.5} />
             </button>
           )}
       </div>

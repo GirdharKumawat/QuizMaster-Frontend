@@ -31,6 +31,7 @@ function WaitingRoomPage() {
     pointsPerCorrect,
     host_id,
     question_count,
+    join_code,
     playerStatus,
     isInitialState,
     session_id: storedSessionId,
@@ -98,6 +99,15 @@ function WaitingRoomPage() {
   // --- HANDLERS ---
   const handleStart = async () => {
     if (isHost) {
+      // check is there are participants before starting
+      if (participants.length === 0) {
+        toast.error({
+          title: "No Participants",
+          detail: "At least one participant is required to start the quiz",
+        });
+        return;
+      }
+
       await startQuizSession(session_id);
       navigate(`/leaderboard/${session_id}`);
     } else if (status === "active" && !isHost) {
@@ -111,10 +121,11 @@ function WaitingRoomPage() {
   };
 
   const copyCode = () => {
+    const code = join_code
     // Try modern Clipboard API first
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard
-        .writeText(session_id)
+        .writeText(code)
         .then(() => {
           toast.success({
             title: "Copied",
@@ -131,8 +142,9 @@ function WaitingRoomPage() {
   };
 
   const fallbackCopy = () => {
+    const code = join_code ;
     const textarea = document.createElement("textarea");
-    textarea.value = session_id;
+    textarea.value = code;
     textarea.style.position = "fixed";
     textarea.style.opacity = "0";
     document.body.appendChild(textarea);
@@ -153,8 +165,8 @@ function WaitingRoomPage() {
   if (isInitialState)
     return (
       <div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center">
-        <div className="border-2 border-black bg-white p-8 shadow-[8px_8px_0px_0px_#000] animate-pulse">
-          <span className="font-black text-xl uppercase">Loading Room...</span>
+        <div className="border-[1.5px] border-gray-900 bg-white p-8 shadow-[5px_5px_0px_0px_rgba(0,0,0,0.6)] animate-pulse">
+          <span className="font-bold text-xl uppercase">Loading Room...</span>
         </div>
       </div>
     );
@@ -163,11 +175,11 @@ function WaitingRoomPage() {
     <div className="min-h-screen bg-[#F0F2F5] p-4 md:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header Card */}
-        <div className="border-2 border-black bg-[#FFD028] p-6 shadow-[8px_8px_0px_0px_#000]">
+        <div className="border-[1.5px] border-gray-900 bg-[#FFD028] p-6 shadow-[5px_5px_0px_0px_rgba(0,0,0,0.6)]">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div className="space-y-4">
               {/* Title */}
-              <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-tight">
                 {title || "Loading Quiz..."}
               </h1>
 
@@ -176,24 +188,25 @@ function WaitingRoomPage() {
                 {/* Room Code */}
                 <button
                   onClick={copyCode}
-                  className="flex items-center gap-2 bg-white border-2 border-black px-4 py-2 shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all font-black   cursor-pointer"
+                  className="flex items-center gap-2 bg-white border-[1.5px] border-gray-900 px-4 py-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all font-bold   cursor-pointer"
                   title="Click to copy"
                 >
-                  <Copy size={16} strokeWidth={3} />
-                  {session_id}
+                  <Copy size={15} strokeWidth={2.5} />
+                  {join_code }
                 </button>
 
-                <div className="flex items-center gap-2 bg-white border-2 border-black px-4 py-2 font-bold">
-                  <HelpCircle size={16} strokeWidth={3} />
+                <div className="flex items-center gap-2 bg-white border-[1.5px] border-gray-900 px-4 py-2 font-semibold">
+                  <HelpCircle size={15} strokeWidth={2.5} />
                   {question_count || 0} Questions
                 </div>
 
-                <div className="flex items-center gap-2 bg-white border-2 border-black px-4 py-2 font-bold">
-                  <Clock size={16} strokeWidth={3} />
-                  {duration / question_count || 60}s / Q
+                <div className="flex items-center gap-2 bg-white border-[1.5px] border-gray-900 px-4 py-2 font-semibold">
+                  <Clock size={15} strokeWidth={2.5} />
+                  {/* dispa */}
+                  {duration}min
                 </div>
-                <div className="flex items-center gap-2 bg-white border-2 border-black px-4 py-2 font-bold">
-                  <Zap size={16} strokeWidth={3} />
+                <div className="flex items-center gap-2 bg-white border-[1.5px] border-gray-900 px-4 py-2 font-semibold">
+                  <Zap size={15} strokeWidth={2.5} />
                   {pointsPerCorrect || 1} Pt(s) / Correct
                 </div>
               </div>
@@ -203,9 +216,9 @@ function WaitingRoomPage() {
             <div className="flex flex-col gap-2">
               <Button
                 onClick={() => navigate("/")}
-                className="px-8 py-3 bg-white text-black border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all rounded-none font-black text-lg uppercase flex items-center gap-2"
+                className="px-8 py-3 bg-white text-black border-[1.5px] border-gray-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-none font-bold text-lg uppercase flex items-center gap-2"
               >
-                <Home size={20} strokeWidth={3} />
+                <Home size={18} strokeWidth={2.5} />
                 Home
               </Button>
 
@@ -213,9 +226,9 @@ function WaitingRoomPage() {
                 <Button
                   variant="secondary"
                   onClick={handleStart}
-                  className="px-8 py-3 bg-[#4ADE80] text-black border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all rounded-none font-black text-lg uppercase flex items-center gap-2"
+                  className="px-8 py-3 bg-[#4ADE80] text-black border-[1.5px] border-gray-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-none font-bold text-lg uppercase flex items-center gap-2"
                 >
-                  <Play size={20} strokeWidth={3} />
+                  <Play size={18} strokeWidth={2.5} />
                   Start Quiz
                 </Button>
               )}
@@ -223,16 +236,16 @@ function WaitingRoomPage() {
               {!isHost && status === "active" && playerStatus === "lobby" && (
                 <Button
                   onClick={handleStart}
-                  className="px-8 py-3 bg-[#4ADE80] text-black border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all rounded-none font-black text-lg uppercase flex items-center gap-2"
+                  className="px-8 py-3 bg-[#4ADE80] text-black border-[1.5px] border-gray-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-none font-bold text-lg uppercase flex items-center gap-2"
                 >
-                  <Zap size={20} strokeWidth={3} />
-                  Join Game
+                  <Zap size={18} strokeWidth={2.5} />
+                  Join Competition
                 </Button>
               )}
 
               {!isHost && status !== "active" && (
-                <div className="px-6 py-3 bg-white border-2 border-black font-black uppercase text-sm flex items-center gap-2 animate-pulse">
-                  <AlertTriangle size={18} strokeWidth={3} />
+                <div className="px-6 py-3 bg-white border-[1.5px] border-gray-900 font-bold uppercase text-sm flex items-center gap-2 animate-pulse">
+                  <AlertTriangle size={16} strokeWidth={2.5} />
                   Waiting for host...
                 </div>
               )}
@@ -242,13 +255,13 @@ function WaitingRoomPage() {
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Players List */}
-          <div className="lg:col-span-2 border-2 border-black bg-white p-5 shadow-[4px_4px_0px_0px_#000]">
+          {/* Participants List */}
+          <div className="lg:col-span-2 border-[1.5px] border-gray-900 bg-white p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)]">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-black text-lg uppercase flex items-center gap-2">
-                <Users size={20} strokeWidth={3} />
+              <h2 className="font-bold text-lg uppercase flex items-center gap-2">
+                <Users size={18} strokeWidth={2.5} />
                 Lobby
-                <span className="bg-black text-white px-2 py-0.5 text-sm">
+                <span className="bg-black text-white px-2 py-0.5 text-sm font-semibold">
                   {participants.length}
                 </span>
               </h2>
@@ -260,15 +273,15 @@ function WaitingRoomPage() {
                 return (
                   <li
                     key={p.user_id}
-                    className={`flex items-center justify-between p-3 border-2 border-black transition-all ${
+                    className={`flex items-center justify-between p-3 border-[1.5px] border-gray-900 transition-all ${
                       isMe
-                        ? "bg-[#A78BFA] shadow-[4px_4px_0px_0px_#000]"
+                        ? "bg-[#A78BFA] shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)]"
                         : "bg-white hover:bg-gray-50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 border-2 border-black flex items-center justify-center text-sm font-black ${
+                        className={`w-9 h-9 border-[1.5px] border-gray-900 flex items-center justify-center text-sm font-bold ${
                           isMe
                             ? "bg-white text-black"
                             : "bg-gray-100 text-gray-800"
@@ -276,7 +289,7 @@ function WaitingRoomPage() {
                       >
                         {p.name?.charAt(0).toUpperCase()}
                       </div>
-                      <span className="font-bold uppercase">
+                      <span className="font-semibold uppercase">
                         {p.name}{" "}
                         {isMe && <span className="text-xs">(YOU)</span>}
                       </span>
@@ -286,8 +299,8 @@ function WaitingRoomPage() {
               })}
 
               {participants.length === 0 && (
-                <li className="text-center py-10 border-2 border-dashed border-black font-bold uppercase text-gray-500">
-                  Waiting for players to join...
+                <li className="text-center py-10 border-2 border-dashed border-gray-400 font-semibold uppercase text-gray-500">
+                  Waiting for participants to join...
                 </li>
               )}
             </ul>
@@ -295,26 +308,26 @@ function WaitingRoomPage() {
 
           {/* Tips / Info Panel */}
           <div className="space-y-4">
-            <div className="border-2 border-black bg-[#FB923C] p-5 shadow-[4px_4px_0px_0px_#000]">
-              <h3 className="font-black text-lg uppercase mb-3 flex items-center gap-2">
-                <Zap size={18} strokeWidth={3} />
+            <div className="border-[1.5px] border-gray-900 bg-[#FB923C] p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)]">
+              <h3 className="font-bold text-lg uppercase mb-3 flex items-center gap-2">
+                <Zap size={16} strokeWidth={2.5} />
                 Instructions
               </h3>
-              <ul className="space-y-2 font-bold text-sm">
+              <ul className="space-y-2 font-medium text-sm">
                 <li className="flex items-start gap-2">
-                  <span className="bg-black text-white px-1.5 py-0.5 text-xs font-black">
+                  <span className="bg-black text-white px-1.5 py-0.5 text-xs font-bold">
                     1
                   </span>
-                  Don't refresh the page once the game starts.
+                  Don't refresh the page once the competition starts.
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="bg-black text-white px-1.5 py-0.5 text-xs font-black">
+                  <span className="bg-black text-white px-1.5 py-0.5 text-xs font-bold">
                     2
                   </span>
                   Answer quickly to get more points.
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="bg-black text-white px-1.5 py-0.5 text-xs font-black">
+                  <span className="bg-black text-white px-1.5 py-0.5 text-xs font-bold">
                     3
                   </span>
                   Host can end the quiz at any time.

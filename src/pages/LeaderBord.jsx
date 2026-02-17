@@ -81,8 +81,8 @@ function LeaderBordPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center">
-        <div className="border-2 border-black bg-white p-8 shadow-[8px_8px_0px_0px_#000] animate-pulse">
-          <span className="font-black text-xl uppercase">Loading Leaderboard...</span>
+        <div className="border-[1.5px] border-gray-900 bg-white p-8 shadow-[5px_5px_0px_0px_rgba(0,0,0,0.6)] animate-pulse">
+          <span className="font-bold text-xl uppercase">Loading Leaderboard...</span>
         </div>
       </div>
     );
@@ -93,17 +93,17 @@ function LeaderBordPage() {
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Header */}
-        <header className="border-2 border-black bg-[#FFD028] p-6 shadow-[8px_8px_0px_0px_#000]">
+        <header className="border-[1.5px] border-gray-900 bg-[#FFD028] p-6 shadow-[5px_5px_0px_0px_rgba(0,0,0,0.6)]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-white border-2 border-black flex items-center justify-center shadow-[4px_4px_0px_0px_#000]">
-                <Trophy size={32} strokeWidth={3} />
+              <div className="w-12 h-12 bg-white border-[1.5px] border-gray-900 flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)]">
+                <Trophy size={28} strokeWidth={2.5} />
               </div>
               <div>
                 <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight">
                   Leaderboard
                 </h1>
-                <p className="font-bold text-sm mt-1">
+                <p className="font-semibold text-sm mt-1">
                   {title || "Quiz Session"}
                 </p>
               </div>
@@ -112,17 +112,17 @@ function LeaderBordPage() {
             <div className="flex flex-wrap gap-3">
               <Button
                 onClick={handleDashboardNavigation}
-                className="px-6 py-3 bg-white text-black border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all rounded-none font-black uppercase flex items-center gap-2"
+                className="px-5 py-2.5 bg-white text-black border-[1.5px] border-gray-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-none font-bold uppercase flex items-center gap-2"
               >
-                <Home size={18} strokeWidth={3} />
+                <Home size={16} strokeWidth={2.5} />
                 Dashboard
               </Button>
               {isHost && status === "active" && (
                 <Button
                   onClick={handleEndQuizSession}
-                  className="px-6 py-3 bg-red-500 text-white border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all rounded-none font-black uppercase flex items-center gap-2"
+                  className="px-5 py-2.5 bg-red-500 text-white border-[1.5px] border-gray-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-none font-bold uppercase flex items-center gap-2"
                 >
-                  <StopCircle size={18} strokeWidth={3} />
+                  <StopCircle size={16} strokeWidth={2.5} />
                   End Quiz
                 </Button>
               )}
@@ -133,11 +133,11 @@ function LeaderBordPage() {
         <div className="grid gap-6 md:grid-cols-3 items-start">
           
           {/* Main Table */}
-          <div className="md:col-span-2 border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000] overflow-hidden">
+          <div className="md:col-span-2 border-[1.5px] border-gray-900 bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden">
             {/* Table Header */}
-            <div className="p-4 border-b-2 border-black bg-gray-50 flex justify-between items-center">
-              <h3 className="font-black text-lg uppercase">Rankings</h3>
-              <span className="bg-[#4ADE80] border-2 border-black px-3 py-1 font-black text-xs uppercase">
+            <div className="p-4 border-b-[1.5px] border-gray-900 bg-gray-50 flex justify-between items-center">
+              <h3 className="font-bold text-lg uppercase">Rankings</h3>
+              <span className="bg-[#4ADE80] border-[1.5px] border-gray-900 px-3 py-1 font-bold text-xs uppercase">
                 {status === "active" ? "Live" : "Final"}
               </span>
             </div>
@@ -147,10 +147,10 @@ function LeaderBordPage() {
               <table className="min-w-full">
                 <thead className="bg-black text-white">
                   <tr>
-                    <th className="py-3 px-4 font-black text-left uppercase text-sm w-16">#</th>
-                    <th className="py-3 px-4 font-black text-left uppercase text-sm">Player</th>
-                    <th className="py-3 px-4 font-black text-center uppercase text-sm">Status</th>
-                    <th className="py-3 px-4 font-black text-right uppercase text-sm">Score</th>
+                    <th className="py-3 px-4 font-bold text-left uppercase text-sm w-16">#</th>
+                    <th className="py-3 px-4 font-bold text-left uppercase text-sm">Participant</th>
+                    <th className="py-3 px-4 font-bold text-center uppercase text-sm">Status</th>
+                    <th className="py-3 px-4 font-bold text-right uppercase text-sm">Score</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -159,43 +159,43 @@ function LeaderBordPage() {
                     return (
                       <tr
                         key={p.id || p.name}
-                        className={`border-b-2 border-black transition-colors ${
+                        className={`border-b-[1.5px] border-gray-900 transition-colors ${
                           isYou ? "bg-[#A78BFA]" : idx % 2 === 0 ? "bg-white" : "bg-gray-50"
                         }`}
                       >
                         {/* Position */}
                         <td className="py-4 px-4">
                           {p.position === 1 ? (
-                            <div className="w-8 h-8 bg-[#FFD028] border-2 border-black flex items-center justify-center">
-                              <Medal size={18} strokeWidth={3} />
+                            <div className="w-8 h-8 bg-[#FFD028] border-[1.5px] border-gray-900 flex items-center justify-center">
+                              <Medal size={16} strokeWidth={2.5} />
                             </div>
                           ) : p.position === 2 ? (
-                            <div className="w-8 h-8 bg-gray-300 border-2 border-black flex items-center justify-center">
-                              <Medal size={18} strokeWidth={3} />
+                            <div className="w-8 h-8 bg-gray-300 border-[1.5px] border-gray-900 flex items-center justify-center">
+                              <Medal size={16} strokeWidth={2.5} />
                             </div>
                           ) : p.position === 3 ? (
-                            <div className="w-8 h-8 bg-[#FB923C] border-2 border-black flex items-center justify-center">
-                              <Medal size={18} strokeWidth={3} />
+                            <div className="w-8 h-8 bg-[#FB923C] border-[1.5px] border-gray-900 flex items-center justify-center">
+                              <Medal size={16} strokeWidth={2.5} />
                             </div>
                           ) : (
-                            <span className="font-black text-lg">{p.position}</span>
+                            <span className="font-bold text-lg">{p.position}</span>
                           )}
                         </td>
                         
-                        {/* Player */}
+                        {/* Participant */}
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
                             <div
-                              className={`w-10 h-10 border-2 border-black flex items-center justify-center font-black ${
+                              className={`w-9 h-9 border-[1.5px] border-gray-900 flex items-center justify-center font-bold ${
                                 isYou ? "bg-white" : "bg-gray-100"
                               }`}
                             >
                               {p.name.charAt(0).toUpperCase()}
                             </div>
-                            <span className="font-bold uppercase break-words">
+                            <span className="font-semibold uppercase break-words">
                               {p.name}
                               {isYou && (
-                                <span className="ml-2 bg-black text-white px-2 py-0.5 text-xs font-black">
+                                <span className="ml-2 bg-black text-white px-2 py-0.5 text-xs font-bold">
                                   YOU
                                 </span>
                               )}
@@ -206,19 +206,19 @@ function LeaderBordPage() {
                         {/* Status */}
                         <td className="py-4 px-4 text-center">
                           {p.status === "completed" && (
-                            <span className="inline-flex items-center gap-1 bg-[#4ADE80] border-2 border-black px-2 py-1 font-bold text-xs uppercase">
-                              <CheckCircle size={14} strokeWidth={3} />
+                            <span className="inline-flex items-center gap-1 bg-[#4ADE80] border-[1.5px] border-gray-900 px-2 py-1 font-semibold text-xs uppercase">
+                              <CheckCircle size={14} strokeWidth={2.5} />
                               Done
                             </span>
                           )}
                           {p.status === "active" && (
-                            <span className="inline-flex items-center gap-1 bg-[#22D3EE] border-2 border-black px-2 py-1 font-bold text-xs uppercase">
-                              <Loader2 className="animate-spin" size={14} strokeWidth={3} />
+                            <span className="inline-flex items-center gap-1 bg-[#22D3EE] border-[1.5px] border-gray-900 px-2 py-1 font-semibold text-xs uppercase">
+                              <Loader2 className="animate-spin" size={14} strokeWidth={2.5} />
                               Playing
                             </span>
                           )}
                           {p.status === "lobby" && (
-                            <span className="inline-flex items-center gap-1 bg-gray-200 border-2 border-black px-2 py-1 font-bold text-xs uppercase">
+                            <span className="inline-flex items-center gap-1 bg-gray-200 border-[1.5px] border-gray-900 px-2 py-1 font-semibold text-xs uppercase">
                               <span className="w-2 h-2 bg-black animate-pulse" />
                               Lobby
                             </span>
@@ -227,7 +227,7 @@ function LeaderBordPage() {
                         
                         {/* Score */}
                         <td className="py-4 px-4 text-right">
-                          <span className="font-black text-xl">{p.score}</span>
+                          <span className="font-bold text-xl">{p.score}</span>
                         </td>
                       </tr>
                     );
@@ -236,7 +236,7 @@ function LeaderBordPage() {
                     <tr>
                       <td
                         colSpan="4"
-                        className="py-10 text-center font-bold uppercase text-gray-500 border-b-2 border-black"
+                        className="py-10 text-center font-semibold uppercase text-gray-500 border-b-[1.5px] border-gray-900"
                       >
                         No participants yet.
                       </td>
@@ -247,9 +247,9 @@ function LeaderBordPage() {
             </div>
 
             {/* Mobile Cards */}
-            <div className="md:hidden divide-y-2 divide-black border-t-2 border-black">
+            <div className="md:hidden divide-y-[1.5px] divide-gray-900 border-t-[1.5px] border-gray-900">
               {sortedLeaderboard.length === 0 && (
-                <div className="p-4 text-center font-bold uppercase text-gray-500">No participants yet.</div>
+                <div className="p-4 text-center font-semibold uppercase text-gray-500">No participants yet.</div>
               )}
               {sortedLeaderboard.map((p) => {
                 const isYou = p.id === userId;
@@ -260,31 +260,31 @@ function LeaderBordPage() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 border-2 border-black flex items-center justify-center font-black bg-gray-100">
-                          {p.position <= 3 ? <Medal size={20} strokeWidth={3} /> : <span className="text-lg">#{p.position}</span>}
+                        <div className="w-11 h-11 border-[1.5px] border-gray-900 flex items-center justify-center font-bold bg-gray-100">
+                          {p.position <= 3 ? <Medal size={18} strokeWidth={2.5} /> : <span className="text-lg">#{p.position}</span>}
                         </div>
                         <div>
-                          <p className="font-black uppercase leading-tight break-words">{p.name}</p>
-                          {isYou && <span className="inline-flex mt-1 bg-black text-white px-2 py-0.5 text-xs font-black">YOU</span>}
+                          <p className="font-bold uppercase leading-tight break-words">{p.name}</p>
+                          {isYou && <span className="inline-flex mt-1 bg-black text-white px-2 py-0.5 text-xs font-bold">YOU</span>}
                         </div>
                       </div>
-                      <span className="font-black text-xl">{p.score}</span>
+                      <span className="font-bold text-xl">{p.score}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {p.status === "completed" && (
-                        <span className="inline-flex items-center gap-1 bg-[#4ADE80] border-2 border-black px-2 py-1 font-bold text-xs uppercase">
-                          <CheckCircle size={14} strokeWidth={3} />
+                        <span className="inline-flex items-center gap-1 bg-[#4ADE80] border-[1.5px] border-gray-900 px-2 py-1 font-semibold text-xs uppercase">
+                          <CheckCircle size={14} strokeWidth={2.5} />
                           Done
                         </span>
                       )}
                       {p.status === "active" && (
-                        <span className="inline-flex items-center gap-1 bg-[#22D3EE] border-2 border-black px-2 py-1 font-bold text-xs uppercase">
-                          <Loader2 className="animate-spin" size={14} strokeWidth={3} />
+                        <span className="inline-flex items-center gap-1 bg-[#22D3EE] border-[1.5px] border-gray-900 px-2 py-1 font-semibold text-xs uppercase">
+                          <Loader2 className="animate-spin" size={14} strokeWidth={2.5} />
                           Playing
                         </span>
                       )}
                       {p.status === "lobby" && (
-                        <span className="inline-flex items-center gap-1 bg-gray-200 border-2 border-black px-2 py-1 font-bold text-xs uppercase">
+                        <span className="inline-flex items-center gap-1 bg-gray-200 border-[1.5px] border-gray-900 px-2 py-1 font-semibold text-xs uppercase">
                           <span className="w-2 h-2 bg-black animate-pulse" />
                           Lobby
                         </span>
@@ -300,21 +300,21 @@ function LeaderBordPage() {
           {!isHost && (
             <div className="space-y-4">
               {/* Your Performance */}
-              <div className="border-2 border-black bg-[#A78BFA] p-5 shadow-[4px_4px_0px_0px_#000]">
-                <h3 className="font-black text-lg uppercase mb-4 flex items-center gap-2">
-                  <Zap size={20} strokeWidth={3} />
+              <div className="border-[1.5px] border-gray-900 bg-[#A78BFA] p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)]">
+                <h3 className="font-bold text-lg uppercase mb-4 flex items-center gap-2">
+                  <Zap size={18} strokeWidth={2.5} />
                   Your Stats
                 </h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-white border-2 border-black">
-                    <span className="font-bold uppercase text-sm">Rank</span>
-                    <span className="font-black text-2xl">
+                  <div className="flex justify-between items-center p-3 bg-white border-[1.5px] border-gray-900">
+                    <span className="font-semibold uppercase text-sm">Rank</span>
+                    <span className="font-bold text-2xl">
                       {yourStats?.position ? `#${yourStats.position}` : "-"}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-white border-2 border-black">
-                    <span className="font-bold uppercase text-sm">Score</span>
-                    <span className="font-black text-2xl">
+                  <div className="flex justify-between items-center p-3 bg-white border-[1.5px] border-gray-900">
+                    <span className="font-semibold uppercase text-sm">Score</span>
+                    <span className="font-bold text-2xl">
                       {yourStats?.score || 0}
                     </span>
                   </div>
@@ -325,7 +325,7 @@ function LeaderBordPage() {
                   <Button
                     onClick={fetchReview}
                     disabled={reviewLoading}
-                    className="w-full mt-4 py-2.5 px-4 sm:py-3 sm:px-6 bg-[#FFD028] text-black border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all rounded-none font-black uppercase text-xs sm:text-sm flex items-center justify-center gap-2"
+                    className="w-full mt-4 py-2.5 px-4 sm:py-3 sm:px-6 bg-[#FFD028] text-black border-[1.5px] border-gray-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-none font-bold uppercase text-xs sm:text-sm flex items-center justify-center gap-2"
                   >
                     {reviewLoading ? (
                       <><Loader2 className="animate-spin" size={16} /> <span className="hidden xs:inline">Loading...</span><span className="xs:hidden">Load...</span></>
@@ -341,18 +341,18 @@ function LeaderBordPage() {
         
         {/* Review Section - Full Width Below */}
         {showReview && reviewData.length > 0 && (
-          <div className="border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000] overflow-hidden">
+          <div className="border-[1.5px] border-gray-900 bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden">
             <div 
-              className="p-3 sm:p-4 border-b-2 border-black bg-[#FFD028] flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 cursor-pointer"
+              className="p-3 sm:p-4 border-b-[1.5px] border-gray-900 bg-[#FFD028] flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 cursor-pointer"
               onClick={() => setShowReview(!showReview)}
             >
-              <h3 className="font-black text-base sm:text-lg uppercase flex items-center gap-2">
+              <h3 className="font-bold text-base sm:text-lg uppercase flex items-center gap-2">
                 <FileText size={18} className="shrink-0" /> 
                 <span className="hidden sm:inline">Your Answer Review</span>
                 <span className="sm:hidden">Review</span>
               </h3>
               <div className="flex items-center justify-between sm:justify-end gap-3">
-                <span className="bg-white border-2 border-black px-2 sm:px-3 py-1 font-black text-xs sm:text-sm">
+                <span className="bg-white border-[1.5px] border-gray-900 px-2 sm:px-3 py-1 font-bold text-xs sm:text-sm">
                   {reviewData.filter(q => q.is_correct).length}/{reviewData.length} Correct
                 </span>
                 {showReview ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -363,21 +363,21 @@ function LeaderBordPage() {
               {reviewData.map((item, idx) => (
                 <div 
                   key={idx} 
-                  className={`border-2 border-black p-3 sm:p-4 ${item.is_correct ? 'bg-green-50' : 'bg-red-50'}`}
+                  className={`border-[1.5px] border-gray-900 p-3 sm:p-4 ${item.is_correct ? 'bg-green-50' : 'bg-red-50'}`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4 mb-3">
                     <div className="flex items-start gap-2">
-                      <span className="w-7 h-7 sm:w-8 sm:h-8 bg-black text-white flex items-center justify-center font-black text-xs sm:text-sm shrink-0">
+                      <span className="w-7 h-7 sm:w-8 sm:h-8 bg-black text-white flex items-center justify-center font-bold text-xs sm:text-sm shrink-0">
                         {idx + 1}
                       </span>
-                      <h4 className="font-bold text-sm sm:text-base leading-snug">{item.question}</h4>
+                      <h4 className="font-semibold text-sm sm:text-base leading-snug">{item.question}</h4>
                     </div>
                     {item.is_correct ? (
-                      <span className="self-start shrink-0 bg-[#4ADE80] border-2 border-black px-2 py-1 font-black text-xs uppercase flex items-center gap-1">
+                      <span className="self-start shrink-0 bg-[#4ADE80] border-[1.5px] border-gray-900 px-2 py-1 font-bold text-xs uppercase flex items-center gap-1">
                         <CheckCircle size={12} className="sm:w-[14px] sm:h-[14px]" /> Correct
                       </span>
                     ) : (
-                      <span className="self-start shrink-0 bg-[#F87171] border-2 border-black px-2 py-1 font-black text-xs uppercase flex items-center gap-1">
+                      <span className="self-start shrink-0 bg-[#F87171] border-[1.5px] border-gray-900 px-2 py-1 font-bold text-xs uppercase flex items-center gap-1">
                         <XCircle size={12} className="sm:w-[14px] sm:h-[14px]" /> Wrong
                       </span>
                     )}
@@ -391,7 +391,7 @@ function LeaderBordPage() {
                       return (
                         <div
                           key={optIdx}
-                          className={`p-2 border-2 border-black font-bold text-xs sm:text-sm flex items-center gap-2 ${
+                          className={`p-2 border-[1.5px] border-gray-900 font-semibold text-xs sm:text-sm flex items-center gap-2 ${
                             isCorrect 
                               ? 'bg-[#4ADE80]' 
                               : isSelected && !isCorrect
@@ -415,9 +415,9 @@ function LeaderBordPage() {
                           ...prev,
                           [idx]: !prev[idx]
                         }))}
-                        className="w-full flex items-center justify-between bg-gray-100 hover:bg-gray-200 p-2 border border-black transition-colors"
+                        className="w-full flex items-center justify-between bg-gray-100 hover:bg-gray-200 p-2 border border-gray-900 transition-colors"
                       >
-                        <span className="font-bold text-xs sm:text-sm uppercase">📖 Explanation</span>
+                        <span className="font-semibold text-xs sm:text-sm uppercase">📖 Explanation</span>
                         {expandedExplanations[idx] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </button>
                       {expandedExplanations[idx] && (

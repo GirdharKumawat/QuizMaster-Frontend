@@ -15,8 +15,8 @@ function Routing() {
   return (
     <BrowserRouter>
                 <Routes>
-                    <Route path='/' element={<LandingPage />} />
-                    <Route path='/home' element={<ProtectedRoute><HomePage/></ProtectedRoute>} />
+                    <Route path='/' element={<ProtectedRoute><HomePage/></ProtectedRoute>} />
+                    <Route path='/welcome' element={<LandingPage />} />
                     <Route path='/waiting/:session_id' element={<ProtectedRoute><WaitingRoomPage /></ProtectedRoute>} />
                     <Route path='/quiz/:session_id' element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
                     <Route path='/quiz' element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />

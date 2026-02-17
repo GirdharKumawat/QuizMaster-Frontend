@@ -23,7 +23,7 @@ const Input = ({
     <div className={`mb-4 w-full ${className}`}>
       {/* Label */}
       {label && (
-        <label className="block text-sm font-bold mb-1.5 uppercase tracking-wide text-black">
+        <label className="block text-sm font-semibold mb-1.5 uppercase tracking-wide text-gray-800">
           {label}
         </label>
       )}
@@ -32,7 +32,7 @@ const Input = ({
         {/* Left Icon */}
         {Icon && (
           <div className="absolute left-4 top-1/2 -translate-y-1/2 text-black pointer-events-none z-10">
-            <Icon size={20} strokeWidth={2.5} />
+            <Icon size={18} strokeWidth={2} />
           </div>
         )}
 
@@ -42,7 +42,7 @@ const Input = ({
           value={value}
           onChange={onChange}
           className={`
-            w-full bg-white text-black font-bold 
+            w-full bg-white text-black font-medium 
             neo-border neo-shadow
             p-2
              

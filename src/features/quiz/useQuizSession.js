@@ -15,7 +15,6 @@ import {
 } from "./quizSessionSlice";
 
 export const useQuizSession = () => {
-  const authState = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const quizSession = useSelector((state) => state.quizSession);
   const { disconnect } = useGlobalWebSocket();
@@ -39,6 +38,7 @@ export const useQuizSession = () => {
           session_id: session_id,
           quiz_id: res.data.quiz_id,
           title: res.data.title,
+          join_code: res.data.join_code,
           description: res.data.description,
           duration: res.data.duration,
           pointsPerCorrect: res.data.points_per_correct,

@@ -10,15 +10,15 @@ const EnrolledQuizzesWindow = ({ activeEnrolled, onNavigate, onClose }) => {
           <button 
             key={q.quiz_id} 
             onClick={() => onNavigate(`/waiting/${q.session_id}`)} 
-            className="text-left bg-white border-2 border-black p-4 shadow-[3px_3px_0px_0px_#000] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer group"
+            className="text-left bg-white border-[1.5px] border-gray-900 p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-none hover:translate-x-[1.5px] hover:translate-y-[1.5px] transition-all cursor-pointer group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-black text-white flex items-center justify-center font-black text-base border-2 border-transparent shrink-0">
+              <div className="w-9 h-9 bg-black text-white flex items-center justify-center font-bold text-base border-[1.5px] border-transparent shrink-0">
                 Q
               </div>
               <div className="min-w-0">
-                <h3 className="text-base font-black uppercase leading-tight truncate">{q.title}</h3>
-                <p className="text-xs font-bold mt-1 uppercase flex items-center gap-1 text-gray-500">
+                <h3 className="text-base font-bold uppercase leading-tight truncate">{q.title}</h3>
+                <p className="text-xs font-medium mt-1 uppercase flex items-center gap-1 text-gray-500">
                   <Clock size={12}/> Waiting for Host
                 </p>
               </div>
@@ -27,7 +27,7 @@ const EnrolledQuizzesWindow = ({ activeEnrolled, onNavigate, onClose }) => {
         )) : (
           <div className="col-span-full text-center py-10 opacity-60">
             <Zap size={40} className="mx-auto mb-3"/>
-            <p className="font-black text-lg uppercase">No Active Enrollments</p>
+            <p className="font-bold text-lg uppercase">No Active Enrollments</p>
           </div>
         )}
       </div>

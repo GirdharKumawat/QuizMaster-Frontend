@@ -5,16 +5,16 @@ const QuestionCard = ({ questions, expandedQuestions, setExpandedQuestions, remo
   if (!questions || questions.length === 0) return null;
   
   return (
-    <div className="border-2 border-black bg-white p-4 shadow-[4px_4px_0px_0px_#000]">
+    <div className="border-[1.5px] border-gray-900 bg-white p-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)]">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-black text-lg uppercase flex items-center gap-2">
-          <List size={20} />
+        <h3 className="font-bold text-lg uppercase flex items-center gap-2">
+          <List size={18} />
           Added Questions
           <span className="bg-black text-white px-2 py-0.5 text-sm">
             {questions.length}
           </span>
         </h3>
-        <div className="text-xs font-bold uppercase text-gray-600">
+        <div className="text-xs font-medium uppercase text-gray-600">
           Click to expand
         </div>
       </div>
@@ -25,9 +25,9 @@ const QuestionCard = ({ questions, expandedQuestions, setExpandedQuestions, remo
           return (
             <div
               key={q.id}
-              className={`border-2 border-black transition-all ${
+              className={`border-[1.5px] border-gray-900 transition-all ${
                 isExpanded
-                  ? "bg-orange-50 shadow-[4px_4px_0px_0px_#FB923C]"
+                  ? "bg-orange-50 shadow-[3px_3px_0px_0px_#FB923C]"
                   : "bg-white hover:bg-gray-50"
               }`}
             >
@@ -42,13 +42,13 @@ const QuestionCard = ({ questions, expandedQuestions, setExpandedQuestions, remo
                 className="w-full text-left p-3 flex items-start gap-3"
               >
                 {/* Question Number */}
-                <div className="w-10 h-10 bg-[#FB923C] border-2 border-black flex items-center justify-center font-black text-lg shrink-0">
+                <div className="w-9 h-9 bg-[#FB923C] border-[1.5px] border-gray-900 flex items-center justify-center font-bold text-lg shrink-0">
                   {index + 1}
                 </div>
                 
                 {/* Question Text */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-gray-900 leading-snug">
+                  <p className="font-semibold text-gray-900 leading-snug">
                     {q.question}
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -69,26 +69,26 @@ const QuestionCard = ({ questions, expandedQuestions, setExpandedQuestions, remo
                 {/* Expand Icon */}
                 <div className="text-black mt-1">
                   {isExpanded ? (
-                    <ChevronUp size={20} strokeWidth={3} />
+                    <ChevronUp size={18} strokeWidth={2.5} />
                   ) : (
-                    <ChevronDown size={20} strokeWidth={3} />
+                    <ChevronDown size={18} strokeWidth={2.5} />
                   )}
                 </div>
               </button>
               
               {/* Expanded Content */}
               {isExpanded && (
-                <div className="border-t-2 border-black p-4">
-                  <label className="font-black text-xs uppercase mb-2 block">Options:</label>
+                <div className="border-t-[1.5px] border-gray-900 p-4">
+                  <label className="font-bold text-xs uppercase mb-2 block">Options:</label>
                   <div className="grid sm:grid-cols-2 gap-2">
                     {q.options.map((option, idx) => {
                       const correct = option === q.correct_answer;
                       return (
                         <div
                           key={idx}
-                          className={`border-2 border-black px-3 py-2 text-sm flex items-center gap-2 ${
+                          className={`border-[1.5px] border-gray-900 px-3 py-2 text-sm flex items-center gap-2 ${
                             correct
-                              ? "bg-[#4ADE80] font-bold"
+                              ? "bg-[#4ADE80] font-semibold"
                               : "bg-white"
                           }`}
                         >
@@ -96,7 +96,7 @@ const QuestionCard = ({ questions, expandedQuestions, setExpandedQuestions, remo
                             <CheckCircle2
                               size={16}
                               className="text-black shrink-0"
-                              strokeWidth={3}
+                              strokeWidth={2.5}
                             />
                           )}
                           <span>{option}</span>
@@ -106,8 +106,8 @@ const QuestionCard = ({ questions, expandedQuestions, setExpandedQuestions, remo
                   </div>
                   
                   {q.explanation && (
-                    <div className="mt-4 p-3 bg-yellow-100 border-2 border-black">
-                      <span className="font-black text-xs uppercase">Explanation:</span>
+                    <div className="mt-4 p-3 bg-yellow-100 border-[1.5px] border-gray-900">
+                      <span className="font-bold text-xs uppercase">Explanation:</span>
                       <p className="text-sm mt-1">{q.explanation}</p>
                     </div>
                   )}
@@ -116,7 +116,7 @@ const QuestionCard = ({ questions, expandedQuestions, setExpandedQuestions, remo
                     <button
                       type="button"
                       onClick={() => removeQuestion(q.id)}
-                      className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold text-sm uppercase"
+                      className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white border-[1.5px] border-gray-900 shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-none hover:translate-x-[1.5px] hover:translate-y-[1.5px] transition-all font-semibold text-sm uppercase"
                     >
                       <Trash2 size={14} />
                       Delete

@@ -38,7 +38,7 @@ export function useAuth() {
       }
 
       toast.success("Login successful");
-      globalThis.location.href = "/home";
+      globalThis.location.href = "/";
     } catch (err) {
       dispatch(setLoading(false));
       dispatch(setIsAuthenticated(false));
@@ -62,7 +62,7 @@ export function useAuth() {
       }
 
       toast.success({ title: "Success", detail: "Account created successfully" });
-      globalThis.location.href = "/home";
+      globalThis.location.href = "/";
     } catch (err) {
       dispatch(setIsAuthenticated(false));
       toast.error({ 

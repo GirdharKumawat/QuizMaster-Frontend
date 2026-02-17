@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, Trophy, Zap, Crown, TrendingUp, Clock, Target } from "lucide-react";
+import { Home, Trophy, Zap, Crown, Clock, Target } from "lucide-react";
 import Window from "../UI/Window";
 import { useNavigate } from "react-router-dom";
 
@@ -13,13 +13,13 @@ const getDiffColor = (diff) => {
 };
 
 const StatCard = ({ icon: Icon, label, value, color }) => (
-  <div className={`${color} border-2 border-black p-3 shadow-[3px_3px_0px_0px_#000] flex items-center gap-3 hover:shadow-[5px_5px_0px_0px_#000] hover:-translate-y-1 transition-all`}>
-    <div className="w-10 h-10 bg-white border-2 border-black flex items-center justify-center">
-      <Icon size={18} strokeWidth={2.5} />
+  <div className={`${color} border-[1.5px] border-gray-900 p-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] flex items-center gap-3 hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 transition-all`}>
+    <div className="w-9 h-9 bg-white border-[1.5px] border-gray-900 flex items-center justify-center">
+      <Icon size={16} strokeWidth={2} />
     </div>
     <div>
-      <p className="text-xl font-black leading-none">{value}</p>
-      <p className="text-xs font-bold uppercase tracking-wide opacity-80 mt-0.5">{label}</p>
+      <p className="text-xl font-bold leading-none">{value}</p>
+      <p className="text-xs font-medium uppercase tracking-wide opacity-70 mt-0.5">{label}</p>
     </div>
   </div>
 );
@@ -49,33 +49,33 @@ const DashboardWindow = ({ username, createdQuizzes, enrolledQuizzes, onClose })
         {/* Recent Activity Section */}
         <div className="space-y-4">
           {/* Recently Hosted */}
-          <div className="border-2 border-black bg-white p-4 shadow-[3px_3px_0px_0px_#000]">
-            <h3 className="font-black text-xs uppercase tracking-wide mb-3 flex items-center gap-2">
+          <div className="border-[1.5px] border-gray-900 bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]">
+            <h3 className="font-bold text-xs uppercase tracking-wide mb-3 flex items-center gap-2">
               <Crown size={14} className="text-[#A78BFA]" /> Your Recent Quizzes
             </h3>
             {recentHosted.length > 0 ? (
               <div className="space-y-2">
                 {recentHosted.map((quiz, idx) => (
-                  <button key={quiz._id || idx} className="w-full flex items-center justify-between p-2.5 border-2 border-black bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer"
+                  <button key={quiz._id || idx} className="w-full flex items-center justify-between p-2.5 border-[1.5px] border-gray-900 bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer"
                    onClick={() => navigate(`/waiting/${quiz.session_id}`)}>
                     <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 bg-[#A78BFA] border-2 border-black flex items-center justify-center text-xs font-black text-white">{idx + 1}</span>
-                      <span className="font-bold text-sm truncate max-w-[180px]">{quiz.title}</span>
+                      <span className="w-6 h-6 bg-[#A78BFA] border-[1.5px] border-gray-900 flex items-center justify-center text-xs font-bold text-white">{idx + 1}</span>
+                      <span className="font-semibold text-sm truncate max-w-[180px]">{quiz.title}</span>
                     </div>
-                    <span className={`text-xs font-bold px-2 py-0.5 border-2 border-black ${getDiffColor(quiz.difficulty)}`}>
+                    <span className={`text-xs font-semibold px-2 py-0.5 border-[1.5px] border-gray-900 ${getDiffColor(quiz.difficulty)}`}>
                       {quiz.difficulty?.toUpperCase()}
                     </span>
                   </button>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400 font-bold text-sm text-center py-4">No quizzes created yet. Start hosting!</p>
+              <p className="text-gray-400 font-medium text-sm text-center py-4">No quizzes created yet. Start hosting!</p>
             )}
           </div>
 
           {/* Active Enrollments */}
-          <div className="border-2 border-black bg-white p-4 shadow-[3px_3px_0px_0px_#000]">
-            <h3 className="font-black text-xs uppercase tracking-wide mb-3 flex items-center gap-2">
+          <div className="border-[1.5px] border-gray-900 bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]">
+            <h3 className="font-bold text-xs uppercase tracking-wide mb-3 flex items-center gap-2">
               <Zap size={14} className="text-[#22D3EE]" /> Active Quizzes
             </h3>
             {recentEnrolled.length > 0 ? (
@@ -83,19 +83,19 @@ const DashboardWindow = ({ username, createdQuizzes, enrolledQuizzes, onClose })
                 {recentEnrolled.map((quiz, idx) => (
                   <button key={quiz._id || idx}
                    onClick={() => navigate(`/waiting/${quiz.session_id}`)} 
-                  className="w-full flex items-center justify-between p-2.5 border-2 border-black bg-cyan-50 hover:bg-cyan-100 transition-colors cursor-pointer">
+                  className="w-full flex items-center justify-between p-2.5 border-[1.5px] border-gray-900 bg-cyan-50 hover:bg-cyan-100 transition-colors cursor-pointer">
                     <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 bg-[#22D3EE] border-2 border-black flex items-center justify-center text-xs font-black text-white">{idx + 1}</span>
-                      <span className="font-bold text-sm truncate max-w-[180px]">{quiz.title}</span>
+                      <span className="w-6 h-6 bg-[#22D3EE] border-[1.5px] border-gray-900 flex items-center justify-center text-xs font-bold text-white">{idx + 1}</span>
+                      <span className="font-semibold text-sm truncate max-w-[180px]">{quiz.title}</span>
                     </div>
-                    <span className="text-xs font-bold px-2 py-0.5 border-2 border-black bg-white flex items-center gap-1">
+                    <span className="text-xs font-semibold px-2 py-0.5 border-[1.5px] border-gray-900 bg-white flex items-center gap-1">
                       <Clock size={12} /> {quiz.status?.toUpperCase() || 'PENDING'}
                     </span>
                   </button>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400 font-bold text-sm text-center py-4">No active quizzes. Join one now!</p>
+              <p className="text-gray-400 font-medium text-sm text-center py-4">No active quizzes. Join one now!</p>
             )}
           </div>
         </div>

@@ -30,15 +30,15 @@ const Loader = ({ variant = "spinner", size = "md", className = "" }) => {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
         <div
-          className={`${sizes[size]} bg-[#FF6B6B] border-2 border-black rounded-sm animate-bounce shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]`}
+          className={`${sizes[size]} bg-[#FF6B6B] border-[1.5px] border-gray-900 rounded-sm animate-bounce shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)]`}
           style={getStyle(-0.3)}
         ></div>
         <div
-          className={`${sizes[size]} bg-[#4ADE80] border-2 border-black rounded-sm animate-bounce shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]`}
+          className={`${sizes[size]} bg-[#4ADE80] border-[1.5px] border-gray-900 rounded-sm animate-bounce shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)]`}
           style={getStyle(-0.15)}
         ></div>
         <div
-          className={`${sizes[size]} bg-[#FFD93D] border-2 border-black rounded-sm animate-bounce shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]`}
+          className={`${sizes[size]} bg-[#FFD93D] border-[1.5px] border-gray-900 rounded-sm animate-bounce shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)]`}
           style={getStyle(0)}
         ></div>
       </div>

@@ -6,6 +6,7 @@ import {
     updateParticipantStatus,
   addParticipant,
   setStatus,
+  markAllParticipantsCompleted,
 } from "../features/quiz/quizSessionSlice";
 
 const WebSocketContext = createContext(null);
@@ -58,6 +59,7 @@ export const WebSocketProvider = ({ children }) => {
 
           case "quiz_ended":
             dispatch(setStatus("completed"));
+            dispatch(markAllParticipantsCompleted());
             break;
 
           case "update_participant_score":

@@ -59,10 +59,10 @@ export const useQuiz = () => {
         }
     };
  
-    const joinQuiz = async (sessionId) => {
+    const joinQuiz = async (joinCode) => {
         try {
             dispatch(setLoading(true));
-            const res = await quizApi.join(sessionId);
+            const res = await quizApi.join(joinCode);
             const joinedQuiz = res.data;
             if (joinedQuiz) {
                 dispatch(addEnrolledQuiz(joinedQuiz));

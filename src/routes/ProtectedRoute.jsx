@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/useAuth";
-import { Loader, Card } from "../components/UI/ui";
+import { Loader } from "../components/UI/ui";
 
 function ProtectedRoute({ children }) {
   const { checkAuth, authState } = useAuth();

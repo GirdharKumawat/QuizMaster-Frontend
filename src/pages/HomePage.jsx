@@ -77,17 +77,17 @@ const HomePage = () => {
         className={`
           fixed md:static inset-y-0 left-0 z-40
           w-64 md:w-72 flex flex-col
-          bg-white border-r-2 border-black
-          shadow-[4px_0px_0px_0px_#000]
+          bg-white border-r-[1.5px] border-gray-900
+          shadow-[2px_0px_0px_0px_rgba(0,0,0,0.5)]
           transition-transform duration-300 ease-in-out
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
       >
         {/* Sidebar Header */}
-        <div className="p-4 border-b-2 border-black">
-          <div className="bg-[#FFD028] border-2 border-black px-3 py-2.5 shadow-[3px_3px_0px_0px_#000] -rotate-1">
-            <p className="text-xs font-bold uppercase tracking-wide opacity-60">Welcome</p>
-            <h2 className="text-base font-black uppercase tracking-tight truncate">{username}</h2>
+        <div className="p-4 border-b-[1.5px] border-gray-900">
+          <div className="bg-[#FFD028] border-[1.5px] border-gray-900 px-3 py-2.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] -rotate-1">
+            <p className="text-xs font-medium uppercase tracking-wide opacity-60">Welcome</p>
+            <h2 className="text-base font-bold uppercase tracking-tight truncate">{username}</h2>
           </div>
         </div>
 
@@ -100,17 +100,17 @@ const HomePage = () => {
                 key={id}
                 onClick={() => handleNavClick(id)}
                 className={`
-                  w-full flex items-center gap-3 px-3 py-3
-                  border-2 border-black font-bold text-sm uppercase tracking-wide
+                  w-full flex items-center gap-3 px-3 py-2.5
+                  border-[1.5px] border-gray-900 font-semibold text-sm uppercase tracking-wide
                   transition-all duration-200 text-left
                   ${isActive
-                    ? `${color} shadow-none translate-x-[2px] translate-y-[2px] ring-2 ${activeRing} ring-offset-1`
-                    : "bg-white shadow-[3px_3px_0px_0px_#000] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#000]"
+                    ? `${color} shadow-none translate-x-[1.5px] translate-y-[1.5px] ring-2 ${activeRing} ring-offset-1`
+                    : "bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.6)] hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,0.6)]"
                   }
                 `}
               >
-                <div className={`w-8 h-8 flex items-center justify-center border-2 border-black ${isActive ? "bg-white" : color}`}>
-                  <Icon size={16} strokeWidth={2.5} />
+                <div className={`w-7 h-7 flex items-center justify-center border-[1.5px] border-gray-900 ${isActive ? "bg-white" : color}`}>
+                  <Icon size={14} strokeWidth={2} />
                 </div>
                 <span>{label}</span>
               </button>
@@ -119,18 +119,18 @@ const HomePage = () => {
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="p-3 border-t-2 border-black">
+        <div className="p-3 border-t-[1.5px] border-gray-900">
           <button
             onClick={logoutUser}
             className="
-              w-full flex items-center gap-3 px-3 py-3
-              bg-[#FF6B6B] border-2 border-black font-bold text-sm uppercase tracking-wide
-              shadow-[3px_3px_0px_0px_#000] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]
-              transition-all active:shadow-none active:translate-x-[2px] active:translate-y-[2px]
+              w-full flex items-center gap-3 px-3 py-2.5
+              bg-[#FF6B6B] border-[1.5px] border-gray-900 font-semibold text-sm uppercase tracking-wide
+              shadow-[2px_2px_0px_0px_rgba(0,0,0,0.6)] hover:shadow-none hover:translate-x-[1.5px] hover:translate-y-[1.5px]
+              transition-all active:shadow-none active:translate-x-[1.5px] active:translate-y-[1.5px]
             "
           >
-            <div className="w-8 h-8 flex items-center justify-center border-2 border-black bg-white">
-              <LogOut size={16} strokeWidth={2.5} />
+            <div className="w-7 h-7 flex items-center justify-center border-[1.5px] border-gray-900 bg-white">
+              <LogOut size={14} strokeWidth={2} />
             </div>
             <span>Logout</span>
           </button>
@@ -141,23 +141,23 @@ const HomePage = () => {
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Top Bar */}
-        <header className="flex items-center justify-between px-4 md:px-8 py-3 border-b-2 border-black bg-white shrink-0">
+        <header className="flex items-center justify-between px-4 md:px-8 py-2.5 border-b-[1.5px] border-gray-900 bg-white shrink-0">
           {/* Mobile menu toggle */}
           <button
             onClick={() => setSidebarOpen(true)}
-            className="md:hidden p-2 border-2 border-black bg-[#FFD028] shadow-[2px_2px_0px_0px_#000] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all"
+            className="md:hidden p-2 border-[1.5px] border-gray-900 bg-[#FFD028] shadow-[2px_2px_0px_0px_rgba(0,0,0,0.6)] active:shadow-none active:translate-x-[1.5px] active:translate-y-[1.5px] transition-all"
           >
-            <Menu size={20} strokeWidth={2.5} />
+            <Menu size={18} strokeWidth={2} />
           </button>
 
           {/* Breadcrumb / Page Title */}
           <div className="flex items-center gap-2">
             {activeItem && (
               <>
-                <div className={`w-7 h-7 ${activeItem.color} border-2 border-black flex items-center justify-center`}>
-                  <activeItem.icon size={14} strokeWidth={2.5} />
+                <div className={`w-6 h-6 ${activeItem.color} border-[1.5px] border-gray-900 flex items-center justify-center`}>
+                  <activeItem.icon size={13} strokeWidth={2} />
                 </div>
-                <h1 className="text-base font-black uppercase tracking-tight">
+                <h1 className="text-base font-bold uppercase tracking-tight">
                   {activeItem.label}
                 </h1>
               </>
@@ -165,7 +165,7 @@ const HomePage = () => {
           </div>
 
           {/* Tagline */}
-          <p className="hidden lg:block font-bold text-xs bg-[#F0F2F5] border-2 border-black px-3 py-1.5 shadow-[2px_2px_0px_0px_#000]">
+          <p className="hidden lg:block font-semibold text-xs bg-[#F0F2F5] border-[1.5px] border-gray-900 px-3 py-1.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]">
             The ultimate arena for knowledge warriors
           </p>
         </header>

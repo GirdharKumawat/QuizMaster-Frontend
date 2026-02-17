@@ -20,7 +20,7 @@ const HostedQuizzesWindow = ({ createdQuizzes, onNavigate, onCreateClick, onClos
             <button 
               key={q.quiz_id} 
               onClick={() => onNavigate(`/waiting/${q.session_id}`)} 
-              className={`relative text-left border-2 border-black p-4 shadow-[3px_3px_0px_0px_#000] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer group ${
+              className={`relative text-left border-[1.5px] border-gray-900 p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] active:shadow-none active:translate-x-[1.5px] active:translate-y-[1.5px] hover:shadow-none hover:translate-x-[1.5px] hover:translate-y-[1.5px] transition-all cursor-pointer group ${
                 isCompleted 
                   ? "bg-gray-100 opacity-75" 
                   : "bg-white"
@@ -28,13 +28,13 @@ const HostedQuizzesWindow = ({ createdQuizzes, onNavigate, onCreateClick, onClos
             >
               {/* Completed Badge */}
               {isCompleted && (
-                <div className="absolute -top-2 -right-2 bg-[#4ADE80] border-2 border-black p-1 shadow-[2px_2px_0px_0px_#000] rotate-12">
+                <div className="absolute -top-2 -right-2 bg-[#4ADE80] border-[1.5px] border-gray-900 p-1 shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,0.5)] rotate-12">
                   <CheckCircle2 size={14} className="text-black" />
                 </div>
               )}
               
               <div className="flex justify-between items-start mb-2 gap-2">
-                <span className={`border-2 border-black text-xs font-bold px-2 py-0.5 uppercase truncate max-w-[50%] ${
+                <span className={`border-[1.5px] border-gray-900 text-xs font-semibold px-2 py-0.5 uppercase truncate max-w-[50%] ${
                   isCompleted 
                     ? "bg-gray-400 text-white" 
                     : "bg-[#A78BFA] text-white"
@@ -42,21 +42,21 @@ const HostedQuizzesWindow = ({ createdQuizzes, onNavigate, onCreateClick, onClos
                   {q.topic || "General"}
                 </span>
                 {isCompleted ? (
-                  <span className="text-xs font-black bg-[#4ADE80] text-black px-2 py-0.5 border-2 border-black whitespace-nowrap">
+                  <span className="text-xs font-bold bg-[#4ADE80] text-black px-2 py-0.5 border-[1.5px] border-gray-900 whitespace-nowrap">
                     COMPLETED
                   </span>
                 ) : (
                   <Hash size={14} className="flex-shrink-0" />
                 )}
               </div>
-              <h3 className={`text-base font-black uppercase truncate ${isCompleted ? "line-through decoration-2" : ""}`}>
+              <h3 className={`text-base font-bold uppercase truncate ${isCompleted ? "line-through decoration-2" : ""}`}>
                 {q.title}
               </h3>
               <div className="mt-3 flex justify-between items-end gap-2">
-                <p className="font-mono text-xs font-bold bg-yellow-200 px-1.5 py-0.5 border-2 border-black truncate max-w-[60%]">
-                  ID: {q.session_id}
+                <p className="font-mono text-xs font-semibold bg-yellow-200 px-1.5 py-0.5 border-[1.5px] border-gray-900 truncate max-w-[60%]">
+                  Code: {q.join_code || q.session_id}
                 </p>
-                <span className="text-xs font-black uppercase text-gray-400 group-hover:text-black whitespace-nowrap">
+                <span className="text-xs font-bold uppercase text-gray-400 group-hover:text-black whitespace-nowrap">
                   {isCompleted ? "Results" : "Manage"} &rarr;
                 </span>
               </div>
@@ -66,7 +66,7 @@ const HostedQuizzesWindow = ({ createdQuizzes, onNavigate, onCreateClick, onClos
         {!sortedQuizzes?.length && (
           <div className="col-span-full text-center py-10 opacity-60">
             <FolderOpen size={40} className="mx-auto mb-3"/>
-            <p className="font-black text-lg uppercase">No Hosted Quizzes</p>
+            <p className="font-bold text-lg uppercase">No Hosted Quizzes</p>
             <Button onClick={onCreateClick} className="mt-4 bg-[#A78BFA] text-sm">
               Create One
             </Button>

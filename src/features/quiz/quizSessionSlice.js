@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
 
   session_id: null,
+  join_code: null,
   status: "waiting", // 'waiting' | 'active' | 'completed'
   participants: [],
   
@@ -63,10 +64,18 @@ const quizSessionSlice = createSlice({
       }
     },
 
+    markAllParticipantsCompleted(state) {
+      state.participants = state.participants.map((participant) => ({
+        ...participant,
+        status: "completed",
+      }));
+    },
+
     // metaData management
     setQuizDetails(state, action) {
-      const { session_id, quiz_id, title, description, duration,pointsPerCorrect,host_id,question_count } = action.payload;
+      const { session_id, join_code, quiz_id, title, description, duration,pointsPerCorrect,host_id,question_count } = action.payload;
       state.session_id = session_id;
+      state.join_code = join_code || null;
       state.quiz_id = quiz_id;
         state.title = title;
         state.description = description;
@@ -96,6 +105,7 @@ const quizSessionSlice = createSlice({
 
     resetQuizSession(state) {
       state.session_id = null;
+      state.join_code = null;
       state.status = "waiting";
       state.participants = [];
       state.quiz_id = null;
@@ -112,19 +122,15 @@ const quizSessionSlice = createSlice({
   },
 });
 export const {
-
   setStatus,
-
   setParticipants,
   addParticipant,
   updateParticipantScore,
   updateParticipantStatus,
-
+  markAllParticipantsCompleted,
   setQuizDetails,
-
   setQuestions,
   setCurrentQuestionIndex,
-   
   setPlayerStatus,
   setTimeLeft,  
   resetQuizSession,

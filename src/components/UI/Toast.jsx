@@ -92,10 +92,10 @@ export const Toaster = () => {
 // --- 4. INDIVIDUAL TOAST ITEM ---
 const ToastItem = ({ id, type, message, isClosing, onClose, onRemove }) => {
   const styles = {
-    success: { bg: "bg-[#4ADE80]", icon: <Check strokeWidth={3} /> },
-    error: { bg: "bg-[#FF6B6B]", icon: <X strokeWidth={3} /> },
+    success: { bg: "bg-[#4ADE80]", icon: <Check strokeWidth={2.5} /> },
+    error: { bg: "bg-[#FF6B6B]", icon: <X strokeWidth={2.5} /> },
     loading: { bg: "bg-[#FFD93D]", icon: <Loader2 className="animate-spin" /> },
-    info: { bg: "bg-[#e2b13f]", icon: <Info strokeWidth={3} /> },
+    info: { bg: "bg-[#e2b13f]", icon: <Info strokeWidth={2.5} /> },
   };
 
   const style = styles[type] || styles.info;
@@ -124,9 +124,9 @@ const ToastItem = ({ id, type, message, isClosing, onClose, onRemove }) => {
         pointer-events-auto
         flex items-center gap-3 px-5 py-4
         min-w-[300px] max-w-sm
-        border-2 border-black 
+        border-[1.5px] border-gray-900 
         ${style.bg}
-        shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+        shadow-[3px_3px_0px_0px_rgba(0,0,0,0.8)]
         /* Animation Classes */
         ${isClosing ? "animate-slide-out-right" : "animate-slide-in-right"}
       `}

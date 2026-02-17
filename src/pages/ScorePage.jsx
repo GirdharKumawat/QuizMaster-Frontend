@@ -15,23 +15,23 @@ function ScorePage() {
 
   return (
     <div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center p-6">
-      <div className="max-w-lg w-full border-2 border-black bg-white p-8 shadow-[8px_8px_0px_0px_#000] text-center space-y-6">
+      <div className="max-w-lg w-full border-[1.5px] border-gray-900 bg-white p-8 shadow-[5px_5px_0px_0px_rgba(0,0,0,0.6)] text-center space-y-6">
         <div className="text-3xl md:text-4xl font-black uppercase">Your Score</div>
-        <div className="text-6xl font-black">
+        <div className="text-6xl font-bold">
           {score} / {total}
         </div>
 
         {isGuest ? (
           <Button
             onClick={() => navigate("/signup")}
-            className="px-6 py-3 bg-[#FFD028] text-black border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all rounded-none font-black uppercase"
+            className="px-5 py-2.5 bg-[#FFD028] text-black border-[1.5px] border-gray-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-none font-bold uppercase"
           >
             Sign Up to Save
           </Button>
         ) : (
           <Button
-            onClick={() => navigate("/home")}
-            className="px-6 py-3 bg-[#4ADE80] text-black border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all rounded-none font-black uppercase"
+            onClick={() => navigate("/")}
+            className="px-5 py-2.5 bg-[#4ADE80] text-black border-[1.5px] border-gray-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-none font-bold uppercase"
           >
             Save to Leaderboard
           </Button>

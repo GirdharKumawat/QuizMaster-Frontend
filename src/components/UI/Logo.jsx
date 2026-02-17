@@ -1,11 +1,7 @@
-const Logo = ({ size = "md" }) => {
+const Logo = ({ size = "sm" }) => {
     const sizeMap = {
-        xs: 32,
         sm: 48,
-        md: 64,
-        lg: 96,
         xl: 128,
-        "2xl": 160,
     };
 
     const width = sizeMap[size] || sizeMap.md;

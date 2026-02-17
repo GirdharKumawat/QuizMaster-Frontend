@@ -4,7 +4,7 @@ export const quizApi = {
   create: (data) => axiosAPI.post("quizzes/", data),
   get: (sessionId) => axiosAPI.get(`quizzes/${sessionId}/`),
 
-  join: (sessionId) => axiosAPI.post(`quizzes/${sessionId}/join/`),
+  join: (joinCode) => axiosAPI.post(`quizzes/join/${joinCode.toUpperCase()}/`),
   listQuizzes: () => axiosAPI.get("quizzes/"),
 
   startQuiz: (sessionId) => axiosAPI.post(`quizzes/${sessionId}/start/`),
@@ -22,4 +22,14 @@ export const quizApi = {
   
   // Get quiz review after completion
   getReview: (sessionId) => axiosAPI.get(`quizzes/${sessionId}/review/`),
+  // AI Question Generator
+  generateQuestionsAI: async ({ topic, difficulty, count, focus }) => {
+    const res = await axiosAPI.post("quizzes/generate-questions/", {
+      topic,
+      difficulty,
+      count: String(count),
+      ...(focus && { focus }),
+    });
+    return res.data;
+  },
 }; 
